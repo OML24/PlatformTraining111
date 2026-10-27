@@ -146,12 +146,15 @@ jobs:
       - name: سجلات الخدمات عند الفشل
         if: failure()
         run: |
-          for f in /tmp/migrate.log /tmp/api.log /tmp/portal.log; do
+          if [ -f /tmp/migrate.log ]; then
+            echo "::error title=migrate::$(grep -m1 -E 'Unhandled exception' /tmp/migrate.log | sed 's/%/%25/g' || echo 'no exception line')"
+            grep -E 'Npgsql|PostgresException|FATAL|Failed executing|error:|MessageText' /tmp/migrate.log \
+              | head -8 | sed 's/%/%25/g' | while IFS= read -r line; do echo "::error title=migrate::${line}"; done
+            grep -m3 -A6 'Unhandled exception' /tmp/migrate.log | sed 's/%/%25/g' | while IFS= read -r line; do echo "::error title=migrate-detail::${line}"; done
+          fi
+          for f in /tmp/api.log /tmp/portal.log; do
             [ -f "$f" ] || continue
-            echo "=== $f ==="
-            tail -80 "$f" | sed 's/\r//g' | while IFS= read -r line; do
-              echo "::error title=${f##*/}::${line//%/%%}"
-            done
+            grep -m4 -E 'Unhandled exception|Failed|error' "$f" | sed 's/%/%25/g' | while IFS= read -r line; do echo "::error title=${f##*/}::${line}"; done
           done
 
       - name: حفظ السجلات
