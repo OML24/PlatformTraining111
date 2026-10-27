@@ -59,9 +59,9 @@ public sealed class MemberDirectoryService(IMemberDirectoryStore store,
         var user = await store.UserAsync(userId, ct) ?? throw new KeyNotFoundException("User not found.");
         if (!user.IsActive) throw new KeyNotFoundException("User not found.");
         var profile = await store.ProfileAsync(userId, ct);
-        var certificates = await certificates.ProfileAsync(actorId, userId, ct);
+        var issued = await certificates.ProfileAsync(actorId, userId, ct);
         return new MemberDetail(await SummaryAsync(user, ct), profile?.BioAr, profile?.BioEn,
-            profile?.ContactEmail, profile?.Phone, profile?.OfficeAr, certificates.Certificates);
+            profile?.ContactEmail, profile?.Phone, profile?.OfficeAr, issued.Certificates);
     }
 
     public async Task<MemberDetail> MyProfileAsync(Guid actorId, CancellationToken ct)
