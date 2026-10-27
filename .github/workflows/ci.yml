@@ -114,7 +114,9 @@ jobs:
         run: dotnet build ZU.Training.sln -c Release
 
       - name: تطبيق الترحيلات
-        run: dotnet run --project src/ZU.Training.WebApi -c Release --no-build -- --migrate
+        run: |
+          set -o pipefail
+          dotnet run --project src/ZU.Training.WebApi -c Release --no-build -- --migrate 2>&1 | tee /tmp/migrate.log
 
       - name: إنشاء حساب الأدمن
         run: |
@@ -144,8 +146,13 @@ jobs:
       - name: سجلات الخدمات عند الفشل
         if: failure()
         run: |
-          echo "=== API ==="; tail -100 /tmp/api.log || true
-          echo "=== PORTAL ==="; tail -60 /tmp/portal.log || true
+          for f in /tmp/migrate.log /tmp/api.log /tmp/portal.log; do
+            [ -f "$f" ] || continue
+            echo "=== $f ==="
+            tail -80 "$f" | sed 's/\r//g' | while IFS= read -r line; do
+              echo "::error title=${f##*/}::${line//%/%%}"
+            done
+          done
 
       - name: حفظ السجلات
         if: always()

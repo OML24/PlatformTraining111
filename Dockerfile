@@ -24,7 +24,7 @@ WORKDIR /app
 
 # خطوط عربية لمولّد الشهادات (QuestPDF) وأدوات فحص الصحة
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl fonts-dejavu-core fonts-noto-core fonts-noto-naskh-arabic \
+ && apt-get install -y --no-install-recommends curl fontconfig fonts-dejavu-core fonts-noto-core \
  && rm -rf /var/lib/apt/lists/*
 
 ENV ASPNETCORE_URLS=http://+:8080 \
