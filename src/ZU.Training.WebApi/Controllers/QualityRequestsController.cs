@@ -143,6 +143,9 @@ public sealed class OfficialDocumentsController(QualityRequestService service) :
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+    private Guid ActorId() => Guid.TryParse(User.FindFirstValue("sub"), out var id)
+        ? id : throw new UnauthorizedAccessException();
+
     private async Task<IActionResult> Execute<T>(Func<Task<T>> action)
     {
         try { return Ok(await action()); }
