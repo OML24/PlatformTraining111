@@ -3,6 +3,7 @@ using ZU.Training.Application.Members;
 using ZU.Training.Domain.Identity;
 using ZU.Training.Domain.Members;
 using ZU.Training.Domain.Training;
+using ZU.Training.Infrastructure.Data;
 
 namespace ZU.Training.Infrastructure.Repositories;
 
