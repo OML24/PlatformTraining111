@@ -4,7 +4,8 @@ using ZU.Training.Domain.Training;
 
 namespace ZU.Training.Application.Training;
 
-public sealed class EvaluationService(IEvaluationStore store, IAuthStore auth, IPermissionAccess permissions)
+public sealed class EvaluationService(IEvaluationStore store, IAuthStore auth, IPermissionAccess permissions,
+    CertificateIssuanceService certificates)
 {
     public async Task<EvaluationFormView> PublishAsync(Guid actorId, PublishEvaluationInput input, CancellationToken ct)
     {
@@ -105,6 +106,7 @@ public sealed class EvaluationService(IEvaluationStore store, IAuthStore auth, I
                 ResponseId = response.Id, QuestionId = answer.QuestionId, OptionId = answer.OptionId
             });
         await store.SaveAsync(ct);
+        await certificates.ReconcileEnrollmentAsync(courseId, enrollment.Id, actorId, ct);
         return response;
     }
 

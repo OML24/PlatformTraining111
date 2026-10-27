@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>دوراتي | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="member">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="myCourses">دوراتي</h1>
+      <p class="page-subtitle">الدورات المتاحة لك، تسجيل الحضور بكود المحاضرة، التقييم، وملف الأثر.</p>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><h2 data-i18n="courses">الدورات</h2><p>الدورات المطروحة لكليتك والدورات العامة.</p></div>
+          <input id="course-filter" class="form-control" style="max-width:280px" data-i18n-placeholder="search" placeholder="بحث">
+        </div>
+        <div id="course-list" class="card-grid"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section id="course-detail" class="panel d-none">
+        <div class="panel-heading">
+          <div>
+            <h2 id="detail-title"></h2>
+            <p id="detail-meta" class="small-muted"></p>
+          </div>
+          <button type="button" id="close-detail" class="btn btn-sm btn-outline-secondary" data-i18n="close">إغلاق</button>
+        </div>
+        <div id="gate-box" class="mb-4"></div>
+        <div id="lectures-box"></div>
+        <div id="evaluation-box" class="mt-4"></div>
+        <div id="impact-box" class="mt-4"></div>
+        <div id="exam-box" class="mt-4"></div>
+      </section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/member.js"></script>
+</body>
+</html>

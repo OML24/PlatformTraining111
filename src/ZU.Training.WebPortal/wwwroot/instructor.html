@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>دوراتي كمحاضر | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="instructor">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="myCoursesAsInstructor">دوراتي كمحاضر</h1>
+      <p class="page-subtitle">إنشاء المقترحات، إدارة المحاضرات والحضور، الامتحان، الشهادات، وتقييم الأثر.</p>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div><h2 data-i18n="myCoursesAsInstructor">دوراتي كمحاضر</h2><p>الدورات التي أقترحتها أو أُسندت إليّ.</p></div>
+          <button type="button" class="btn btn-primary" id="new-course-toggle" data-i18n="newCourse">مقترح دورة جديد</button>
+        </div>
+        <div id="course-list" class="card-grid"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section class="panel d-none" id="create-panel">
+        <div class="panel-heading">
+          <div><h2 data-i18n="newCourse">مقترح دورة جديد</h2><p>يُحوّل المقترح لمراجعة الجودة قبل الإطلاق.</p></div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="close-create" data-i18n="close">إغلاق</button>
+        </div>
+        <div id="create-message" class="alert d-none"></div>
+        <form id="create-form" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="c-title-ar" data-i18n="titleAr">العنوان بالعربية</label>
+            <input id="c-title-ar" class="form-control" data-hint="course.titleAr" maxlength="300" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="c-title-en">Title (English, optional)</label>
+            <input id="c-title-en" class="form-control" dir="ltr" maxlength="300">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="c-track" data-i18n="track">المسار التدريبي</label>
+            <select id="c-track" class="form-select" required></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="c-faculty" data-i18n="faculty">الكلية</label>
+            <select id="c-faculty" class="form-select"><option value="">—</option></select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="c-mode" data-i18n="mode">طريقة التنفيذ</label>
+            <select id="c-mode" class="form-select">
+              <option value="0" data-i18n="inPerson">حضوري</option>
+              <option value="1" data-i18n="online">عن بعد</option>
+              <option value="2" data-i18n="hybrid">مدمج</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="c-obj-ar" data-i18n="objectivesAr">الأهداف بالعربية</label>
+            <textarea id="c-obj-ar" class="form-control" rows="3" maxlength="2000" required></textarea>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="c-audience-ar" data-i18n="audienceAr">الفئة المستهدفة</label>
+            <input id="c-audience-ar" class="form-control" maxlength="500" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="c-hours" data-i18n="plannedHours">الساعات المعتمدة</label>
+            <input id="c-hours" class="form-control" type="number" min="1" max="200" step="0.5" value="6" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" for="c-enroll" data-i18n="enrollmentMode">طريقة الالتحاق</label>
+            <select id="c-enroll" class="form-select">
+              <option value="0" data-i18n="selfEnroll">تسجيل ذاتي</option>
+              <option value="1" data-i18n="nomination">ترشيح</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="c-start" data-i18n="startAt">البداية</label>
+            <input id="c-start" class="form-control" data-datetime required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="c-end" data-i18n="endAt">النهاية</label>
+            <input id="c-end" class="form-control" data-datetime required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="c-eval" data-i18n="evaluationDeadline">آخر موعد للتقييم</label>
+            <input id="c-eval" class="form-control" data-datetime>
+          </div>
+          <div class="col-12 d-flex gap-4 flex-wrap">
+            <div class="form-check"><input id="c-exam" class="form-check-input" type="checkbox"><label class="form-check-label" for="c-exam" data-i18n="hasExam">يتضمن امتحاناً</label></div>
+            <div class="form-check"><input id="c-quality" class="form-check-input" type="checkbox"><label class="form-check-label" for="c-quality" data-i18n="qualityOperated">تنفّذها دائرة الجودة</label></div>
+          </div>
+          <div class="col-12"><button class="btn btn-primary" type="submit" data-i18n="save">حفظ</button></div>
+        </form>
+      </section>
+
+      <section class="panel d-none" id="manage-panel">
+        <div class="panel-heading">
+          <div><h2 id="manage-title"></h2><p id="manage-meta" class="small-muted"></p></div>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-primary" id="refresh-course" data-i18n="refresh">تحديث</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="close-manage" data-i18n="close">إغلاق</button>
+          </div>
+        </div>
+        <ul class="nav nav-tabs" id="manage-tabs">
+          <li class="nav-item"><button class="nav-link active" data-tab="lectures" data-i18n="lectures">المحاضرات</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="attendance" data-i18n="attendance">الحضور</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="exam" data-i18n="exam">الامتحان</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="impact" data-i18n="impact">الأثر</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="certificates" data-i18n="certificates">الشهادات</button></li>
+          <li class="nav-item"><button class="nav-link" data-tab="actions" data-i18n="actions">إجراءات</button></li>
+        </ul>
+        <div class="tab-body" id="tab-lectures"></div>
+        <div class="tab-body d-none" id="tab-attendance"></div>
+        <div class="tab-body d-none" id="tab-exam"></div>
+        <div class="tab-body d-none" id="tab-impact"></div>
+        <div class="tab-body d-none" id="tab-certificates"></div>
+        <div class="tab-body d-none" id="tab-actions"></div>
+      </section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/instructor.js"></script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ZU.Training.Domain.Common;
+using ZU.Training.Domain.Communication;
 using ZU.Training.Domain.Identity;
+using ZU.Training.Domain.Members;
 using ZU.Training.Domain.Settings;
 using ZU.Training.Domain.Training;
 
@@ -40,6 +42,10 @@ public sealed class TrainingDbContext(DbContextOptions<TrainingDbContext> option
     public DbSet<PasswordPolicy> PasswordPolicies => Set<PasswordPolicy>();
     public DbSet<IntegrationSyncRun> IntegrationSyncRuns => Set<IntegrationSyncRun>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<LectureMaterial> LectureMaterials => Set<LectureMaterial>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<MemberProfile> MemberProfiles => Set<MemberProfile>();
+    public DbSet<ExternalTrainerRequest> ExternalTrainerRequests => Set<ExternalTrainerRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,6 +84,7 @@ public sealed class TrainingDbContext(DbContextOptions<TrainingDbContext> option
             b.Property(x => x.NameEn).HasMaxLength(300);
             b.Property(x => x.Email).HasMaxLength(320);
             b.Property(x => x.PreferredLanguage).HasMaxLength(2);
+            b.Property(x => x.InitialEmailLastError).HasMaxLength(1000);
             b.HasOne<Faculty>().WithMany().HasForeignKey(x => x.FacultyId).OnDelete(DeleteBehavior.Restrict);
             b.HasOne<Department>().WithMany().HasForeignKey(x => x.DepartmentId).OnDelete(DeleteBehavior.Restrict);
         });
@@ -128,6 +135,8 @@ public sealed class TrainingDbContext(DbContextOptions<TrainingDbContext> option
             b.HasOne<TrainingTrack>().WithMany().HasForeignKey(x => x.TrainingTrackId).OnDelete(DeleteBehavior.Restrict);
             b.Property(x => x.ActualInstructorNameAr).HasMaxLength(300);
             b.Property(x => x.ActualInstructorNameEn).HasMaxLength(300);
+            b.Property(x => x.ExternalTrainerOrganizationAr).HasMaxLength(300);
+            b.Property(x => x.ExternalTrainerOrganizationEn).HasMaxLength(300);
             b.Property(x => x.ReviewNoteAr).HasMaxLength(4000);
             b.HasOne<Faculty>().WithMany().HasForeignKey(x => x.FacultyId).OnDelete(DeleteBehavior.Restrict);
             b.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
@@ -154,6 +163,7 @@ public sealed class TrainingDbContext(DbContextOptions<TrainingDbContext> option
             b.ToTable("lectures");
             b.HasIndex(x => new { x.CourseId, x.SequenceNumber }).IsUnique();
             b.Property(x => x.AttendanceCode).HasMaxLength(4);
+            b.Property(x => x.OnlineLink).HasMaxLength(1000);
             b.HasOne<Course>().WithMany().HasForeignKey(x => x.CourseId).OnDelete(DeleteBehavior.Restrict);
         });
         modelBuilder.Entity<CourseEnrollment>(b =>
@@ -290,9 +300,65 @@ public sealed class TrainingDbContext(DbContextOptions<TrainingDbContext> option
             b.Property(x => x.ScreenKey).HasMaxLength(150);
             b.Property(x => x.FieldKey).HasMaxLength(150);
         });
+        modelBuilder.Entity<LectureMaterial>(b =>
+        {
+            b.ToTable("lecture_materials");
+            b.Property(x => x.OriginalName).HasMaxLength(300);
+            b.Property(x => x.StorageKey).HasMaxLength(100);
+            b.Property(x => x.Sha256).HasMaxLength(64);
+            b.HasIndex(x => x.LectureId);
+            b.HasOne<Lecture>().WithMany().HasForeignKey(x => x.LectureId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UploadedByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<Notification>(b =>
+        {
+            b.ToTable("notifications");
+            b.Property(x => x.Kind).HasMaxLength(80);
+            b.Property(x => x.TitleAr).HasMaxLength(300);
+            b.Property(x => x.TitleEn).HasMaxLength(300);
+            b.Property(x => x.BodyAr).HasMaxLength(2000);
+            b.Property(x => x.BodyEn).HasMaxLength(2000);
+            b.Property(x => x.LinkUrl).HasMaxLength(500);
+            b.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
+            b.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<MemberProfile>(b =>
+        {
+            b.ToTable("member_profiles");
+            b.HasIndex(x => x.UserId).IsUnique();
+            b.Property(x => x.BioAr).HasMaxLength(4000);
+            b.Property(x => x.BioEn).HasMaxLength(4000);
+            b.Property(x => x.ExpertiseAr).HasMaxLength(1000);
+            b.Property(x => x.ExpertiseEn).HasMaxLength(1000);
+            b.Property(x => x.PhotoStorageKey).HasMaxLength(100);
+            b.Property(x => x.ContactEmail).HasMaxLength(320);
+            b.Property(x => x.Phone).HasMaxLength(40);
+            b.Property(x => x.OfficeAr).HasMaxLength(200);
+            b.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<ExternalTrainerRequest>(b =>
+        {
+            b.ToTable("external_trainer_requests");
+            b.Property(x => x.TrainerNameAr).HasMaxLength(300);
+            b.Property(x => x.TrainerNameEn).HasMaxLength(300);
+            b.Property(x => x.Email).HasMaxLength(320);
+            b.Property(x => x.OrganizationAr).HasMaxLength(300);
+            b.Property(x => x.NoteAr).HasMaxLength(2000);
+            b.Property(x => x.CreatedLoginName).HasMaxLength(64);
+            b.HasIndex(x => x.Status);
+            b.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.RequestedByUserId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne<UserAccount>().WithMany().HasForeignKey(x => x.HandledByUserId).OnDelete(DeleteBehavior.Restrict);
+        });
         modelBuilder.Entity<PasswordPolicy>().ToTable("password_policies");
         modelBuilder.Entity<IntegrationSyncRun>().ToTable("integration_sync_runs");
-        modelBuilder.Entity<AuditEvent>().ToTable("audit_events");
+        modelBuilder.Entity<AuditEvent>(b =>
+        {
+            b.ToTable("audit_events");
+            b.Property(x => x.IpAddress).HasMaxLength(64);
+            b.Property(x => x.UserAgent).HasMaxLength(400);
+            b.Property(x => x.Details).HasMaxLength(2000);
+            b.HasIndex(x => x.CreatedAtUtc);
+        });
 
         var seededAt = new DateTimeOffset(2026, 10, 26, 0, 0, 0, TimeSpan.Zero);
         modelBuilder.Entity<Role>().HasData(

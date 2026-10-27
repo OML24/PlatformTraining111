@@ -1,11 +1,13 @@
+using ZU.Training.Application.Communication;
 using ZU.Training.Application.Security;
+using ZU.Training.Domain.Communication;
 using ZU.Training.Domain.Identity;
 using ZU.Training.Domain.Training;
 
 namespace ZU.Training.Application.Training;
 
 public sealed class QualityRequestService(IQualityRequestStore store, IOfficialDocumentStorage storage,
-    IAuthStore auth, IPermissionAccess permissions)
+    IAuthStore auth, IPermissionAccess permissions, NotificationService notifications)
 {
     private sealed record Actor(UserAccount User, HashSet<string> Roles)
     {
@@ -178,9 +180,69 @@ public sealed class QualityRequestService(IQualityRequestStore store, IOfficialD
             {
                 certificate.Status = CertificateStatus.Revoked;
                 certificate.StatusReason = "CourseCancelled";
+                certificate.StatusChangedAtUtc = DateTimeOffset.UtcNow;
             }
         }
-        await store.SaveAsync(ct); return request;
+        await store.SaveAsync(ct);
+        if (input.Status == QualityRequestStatus.Approved)
+        {
+            foreach (var enrollment in await store.EnrollmentsAsync(course.Id, ct))
+                await notifications.NotifyAsync(enrollment.UserId, NotificationKinds.CourseCancelled,
+                    "أُلغيت دورة تدريبية", "Training course cancelled",
+                    "أُلغيت الدورة: " + course.TitleAr + "، وأُلغيت شهاداتها.",
+                    "Course cancelled and its certificates revoked: " + course.TitleAr,
+                    "/member.html", ct);
+        }
+        return request;
+    }
+
+    /// <summary>وثائق مقترح الدورة (كتب التكليف والسير الذاتية للمحاضرين الخارجيين).</summary>
+    public async Task<IReadOnlyList<OfficialDocumentRow>> CourseDocumentsAsync(Guid actorId, Guid courseId,
+        CancellationToken ct)
+    {
+        var actor = await ActorAsync(actorId, ct);
+        var course = await store.CourseAsync(courseId, ct) ?? throw new KeyNotFoundException("Course not found.");
+        var permitted = actor.IsQuality || course.CreatedByUserId == actorId || course.InstructorUserId == actorId ||
+                        course.FacultyId == actor.User.FacultyId;
+        if (!permitted) throw new UnauthorizedAccessException();
+        var rows = await store.DocumentsAsync("Course", courseId, ct);
+        return rows.Select(x => new OfficialDocumentRow(x.Id, x.EntityType, x.EntityId, x.Kind,
+            x.OriginalName, x.Sha256, x.UploadedByUserId, x.CreatedAtUtc)).ToList();
+    }
+
+    /// <summary>إرفاق الكتاب الرسمي والسيرة الذاتية لمحاضر خارجي في مقترح دورة (القسم 7).</summary>
+    public async Task<OfficialDocumentRow> AttachCourseDocumentAsync(Guid actorId, Guid courseId, string kind,
+        Stream content, string originalName, CancellationToken ct)
+    {
+        var actor = await ActorAsync(actorId, ct);
+        await RequireAsync(actor, PermissionKeys.CreateCourses, ct);
+        var allowed = new[] { "ExternalTrainerLetter", "ExternalTrainerCv" };
+        if (!allowed.Contains(kind, StringComparer.Ordinal))
+            throw new ArgumentException("Unsupported proposal document kind.");
+        var course = await store.CourseAsync(courseId, ct) ?? throw new KeyNotFoundException("Course not found.");
+        if (!actor.IsAdmin && !actor.IsQuality &&
+            (course.CreatedByUserId != actorId || (actor.IsDean && course.FacultyId != actor.User.FacultyId)))
+            throw new UnauthorizedAccessException();
+        if (course.Status is not (CourseStatus.Draft or CourseStatus.Submitted or CourseStatus.RevisionRequested))
+            throw new InvalidOperationException("Documents can be attached before the proposal is approved.");
+        var saved = await storage.SaveAsync(content, originalName, ct);
+        var document = AddDocument("Course", courseId, kind, saved, actorId);
+        await store.SaveAsync(ct);
+        return new OfficialDocumentRow(document.Id, document.EntityType, document.EntityId, document.Kind,
+            document.OriginalName, document.Sha256, document.UploadedByUserId, document.CreatedAtUtc);
+    }
+
+    public async Task<OfficialDocumentVault> VaultAsync(Guid actorId, string? query, string? kind,
+        Guid? entityId, int page, CancellationToken ct)
+    {
+        var actor = await ActorAsync(actorId, ct);
+        await RequireAsync(actor, PermissionKeys.ViewOfficialDocuments, ct);
+        if (!actor.IsQuality) throw new UnauthorizedAccessException();
+        page = page is < 1 or > 10000 ? 1 : page;
+        var rows = await store.VaultAsync(query, kind, entityId, (page - 1) * 30, 30, ct);
+        return new OfficialDocumentVault(rows.Select(x => new OfficialDocumentRow(x.Id, x.EntityType,
+            x.EntityId, x.Kind, x.OriginalName, x.Sha256, x.UploadedByUserId, x.CreatedAtUtc)).ToList(),
+            await store.VaultCountAsync(query, kind, entityId, ct), page);
     }
 
     public async Task<OfficialDocumentDownload> OpenDocumentAsync(Guid actorId, Guid documentId,
@@ -195,18 +257,30 @@ public sealed class QualityRequestService(IQualityRequestStore store, IOfficialD
             permitted = (await store.NeedAsync(document.EntityId, ct))?.SubmittedByUserId == actorId;
         if (!permitted && document.EntityType == "CourseCancellationRequest")
             permitted = (await store.CancellationAsync(document.EntityId, ct))?.RequestedByUserId == actorId;
+        if (!permitted && document.EntityType == "Course")
+        {
+            var course = await store.CourseAsync(document.EntityId, ct);
+            permitted = course is not null &&
+                (course.CreatedByUserId == actorId || course.InstructorUserId == actorId ||
+                 course.FacultyId == actor.User.FacultyId);
+        }
         if (!permitted) throw new UnauthorizedAccessException();
         var stream = await storage.OpenReadAsync(document.StorageKey, ct)
             ?? throw new KeyNotFoundException("Document file not found.");
         return new OfficialDocumentDownload(stream, document.OriginalName);
     }
 
-    private void AddDocument(string type, Guid id, string kind, StoredOfficialDocument saved, Guid actorId)
-        => store.AddDocument(new OfficialDocument
+    private OfficialDocument AddDocument(string type, Guid id, string kind, StoredOfficialDocument saved,
+        Guid actorId)
+    {
+        var document = new OfficialDocument
         {
             EntityType = type, EntityId = id, Kind = kind, OriginalName = saved.OriginalName,
             StorageKey = saved.StorageKey, Sha256 = saved.Sha256, UploadedByUserId = actorId
-        });
+        };
+        store.AddDocument(document);
+        return document;
+    }
 
     private static void ValidateNeed(TrainingNeedInput input)
     {

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>التحقق من شهادة | جامعة الزرقاء</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="verify">
+  <header id="app-header" class="site-header"></header>
+  <main class="container" style="max-width:760px;padding-block:40px">
+    <div class="panel">
+      <div class="panel-heading">
+        <div>
+          <h2 data-i18n="verifyCertificate">التحقق من شهادة</h2>
+          <p>أدخل الرقم المرجعي المطبوع على الشهادة للتأكد من صحتها.</p>
+        </div>
+      </div>
+      <form id="verify-form" class="row g-2 align-items-end">
+        <div class="col-sm-8">
+          <label class="form-label" for="cert" data-i18n="certificateReference">الرقم المرجعي للشهادة</label>
+          <input id="cert" class="form-control" maxlength="100" placeholder="ZU-2026-IT-0001" required>
+        </div>
+        <div class="col-sm-4">
+          <button class="btn btn-primary w-100" type="submit" data-i18n="verify">تحقق</button>
+        </div>
+      </form>
+      <div id="verify-result" class="mt-4"></div>
+    </div>
+  </main>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/verify.js"></script>
+</body>
+</html>

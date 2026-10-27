@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>لوحتي | جامعة الزرقاء</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="dashboard">
+  <header id="app-header" class="site-header"></header>
+  <main class="container" style="max-width:720px;padding-block:60px">
+    <div class="panel text-center">
+      <div class="loading">جارٍ توجيهك إلى لوحتك…</div>
+    </div>
+  </main>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script>
+    ZU.boot({ onReady: function (account) { if (account) location.replace(ZU.homeFor(account)); } });
+  </script>
+</body>
+</html>

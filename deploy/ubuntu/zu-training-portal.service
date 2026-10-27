@@ -1,0 +1,24 @@
+[Unit]
+Description=ZU Training Platform Web Portal
+After=network.target zu-training-api.service
+Wants=zu-training-api.service
+
+[Service]
+Type=notify
+WorkingDirectory=/opt/zu-training/portal
+ExecStart=/usr/bin/dotnet /opt/zu-training/portal/ZU.Training.WebPortal.dll
+EnvironmentFile=/etc/zu-training/zu-training.env
+Environment=ASPNETCORE_URLS=http://127.0.0.1:5081
+Environment=ASPNETCORE_ENVIRONMENT=Production
+User=zutraining
+Group=zutraining
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+SyslogIdentifier=zu-training-portal
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

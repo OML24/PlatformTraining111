@@ -10,7 +10,8 @@ namespace ZU.Training.WebApi.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController(AuthService authService, IAuthStore store, IPermissionAccess permissionAccess) : ControllerBase
+public sealed class AuthController(AuthService authService, IAuthStore store, IPermissionAccess permissionAccess,
+    ZU.Training.Application.Reporting.PasswordRecoveryService recovery) : ControllerBase
 {
     [HttpPost("login")]
     [AllowAnonymous]
@@ -76,6 +77,19 @@ public sealed class AuthController(AuthService authService, IAuthStore store, IP
         });
     }
 
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        await recovery.RequestAsync(new ZU.Training.Application.Reporting.PasswordRecoveryRequest(
+            request.LoginName, request.Email), HttpContext.Connection.RemoteIpAddress?.ToString(),
+            cancellationToken);
+        // الرد واحد دائماً حتى لا يُكشف وجود الحساب أو بريده.
+        return Ok(new { requested = true });
+    }
+
     [HttpPost("logout")]
     [Authorize]
     public IActionResult Logout()
@@ -115,3 +129,4 @@ public sealed class AuthController(AuthService authService, IAuthStore store, IP
 public sealed record LoginRequest(string LoginName, string Password, bool RememberMe);
 public sealed record ChangePasswordRequest(string OldPassword, string NewPassword, bool RememberMe);
 public sealed record LanguageRequest(string Language);
+public sealed record ForgotPasswordRequest(string LoginName, string Email);

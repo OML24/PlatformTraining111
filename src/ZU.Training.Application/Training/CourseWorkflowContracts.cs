@@ -16,7 +16,8 @@ public sealed record CourseSummary(Guid Id, string TitleAr, string? TitleEn, Cou
     bool IsEnrolled, bool CanSelfEnroll, string? ReviewNoteAr, Guid? EvaluationFormVersionId);
 
 public sealed record LectureSummary(Guid Id, string TitleAr, string? TitleEn, int SequenceNumber,
-    DateTimeOffset? StartsAtUtc, bool CodeIsActive, DateTimeOffset? CodeExpiresAtUtc, bool? IsPresent);
+    DateTimeOffset? StartsAtUtc, bool CodeIsActive, DateTimeOffset? CodeExpiresAtUtc, bool? IsPresent,
+    DeliveryMode Mode, string? OnlineLink);
 
 public sealed record ParticipantSummary(Guid EnrollmentId, Guid UserId, string NameAr, string? NameEn,
     int AttendedLectures, int TotalLectures, ExamOutcome ExamOutcome);
@@ -58,5 +59,22 @@ public interface ICourseStore
     void AddAttendance(AttendanceRecord attendance);
     void AddExam(Exam exam);
     void AddExamResult(ExamResult result);
+    Task<IReadOnlyList<LectureMaterial>> MaterialsAsync(Guid lectureId, CancellationToken cancellationToken);
+    Task<LectureMaterial?> MaterialAsync(Guid id, CancellationToken cancellationToken);
+    void AddMaterial(LectureMaterial material);
+    Task<IReadOnlyList<CourseEnrollment>> EnrollmentsForUserAsync(Guid userId, CancellationToken cancellationToken);
+    void AddAudit(Domain.Settings.AuditEvent auditEvent);
     Task SaveAsync(CancellationToken cancellationToken);
 }
+
+/// <summary>مشارك في دورة تاريخية مع توثيق الجودة لمتطلبات الشهادة.</summary>
+public sealed record HistoricalParticipantInput(Guid UserId, int AttendedLectures, ExamOutcome ExamOutcome,
+    bool EvaluationConfirmed, bool ImpactConfirmed);
+
+/// <summary>إدخال دورة تاريخية (عُقدت قبل إطلاق المنصة) مع إصدار شهادات المستحقين.</summary>
+public sealed record HistoricalCourseInput(string TitleAr, string? TitleEn, Guid TrainingTrackId,
+    string ObjectivesAr, string? ObjectivesEn, string TargetAudienceAr, string? TargetAudienceEn,
+    DeliveryMode DeliveryMode, decimal PlannedHours, DateTimeOffset StartUtc, DateTimeOffset EndUtc,
+    Guid? FacultyId, Guid? InstructorUserId, string? ActualInstructorNameAr, string? ActualInstructorNameEn,
+    bool HasExam, string? ExamNameAr, string? ExamNameEn, int LectureCount, bool EnrollmentModeSelfRegistration,
+    IReadOnlyList<HistoricalParticipantInput> Participants);

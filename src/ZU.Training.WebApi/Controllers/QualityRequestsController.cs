@@ -122,6 +122,11 @@ public sealed class CourseCancellationsController(QualityRequestService service)
 [Route("api/official-documents")]
 public sealed class OfficialDocumentsController(QualityRequestService service) : ControllerBase
 {
+    [HttpGet]
+    public Task<IActionResult> Vault([FromQuery] string? query, [FromQuery] string? kind,
+        [FromQuery] Guid? entityId, [FromQuery] int page = 1, CancellationToken ct = default)
+        => Execute(() => service.VaultAsync(ActorId(), query, kind, entityId, page, ct));
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Download(Guid id, CancellationToken ct)
     {

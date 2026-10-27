@@ -1,11 +1,14 @@
+using ZU.Training.Application.Communication;
 using ZU.Training.Application.Security;
+using ZU.Training.Domain.Communication;
 using ZU.Training.Domain.Identity;
 using ZU.Training.Domain.Training;
 
 namespace ZU.Training.Application.Training;
 
 public sealed class ImpactService(IImpactStore store, IOfficialDocumentStorage storage,
-    IAuthStore auth, IPermissionAccess permissions)
+    IAuthStore auth, IPermissionAccess permissions, CertificateIssuanceService certificates,
+    NotificationService notifications)
 {
     public async Task<IReadOnlyList<ImpactSummary>> MineAsync(Guid userId, Guid courseId, CancellationToken ct)
     {
@@ -75,6 +78,14 @@ public sealed class ImpactService(IImpactStore store, IOfficialDocumentStorage s
         submission.ReviewedByUserId = actorId;
         submission.ReviewedAtUtc = DateTimeOffset.UtcNow;
         await store.SaveAsync(ct);
+
+        await notifications.NotifyAsync(enrollment.UserId,
+            approve ? NotificationKinds.ImpactApproved : NotificationKinds.ImpactReturned,
+            approve ? "اعتُمد ملف الأثر" : "أُعيد ملف الأثر للتعديل",
+            approve ? "Impact file approved" : "Impact file returned",
+            submission.ReviewNoteAr, submission.ReviewNoteAr,
+            "/member.html?course=" + enrollment.CourseId, ct);
+        await certificates.ReconcileEnrollmentAsync(enrollment.CourseId, enrollment.Id, actorId, ct);
         return submission;
     }
 

@@ -1,11 +1,13 @@
 using System.Security.Cryptography;
+using ZU.Training.Application.Communication;
 using ZU.Training.Application.Security;
 using ZU.Training.Domain.Identity;
 using ZU.Training.Domain.Training;
 
 namespace ZU.Training.Application.Training;
 
-public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, IPermissionAccess permissions)
+public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, IPermissionAccess permissions,
+    CertificateIssuanceService certificates, NotificationService notifications, ICourseFileStorage files)
 {
     private sealed record Actor(UserAccount Account, HashSet<string> Roles)
     {
@@ -123,7 +125,8 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
                 records.FirstOrDefault(x => x.LectureId == lecture.Id && x.EnrollmentId == ownEnrollment.Id)?.IsPresent;
             var expires = lecture.CodeActivatedAtUtc?.Add(AttendanceCodeWindow.Duration);
             return new LectureSummary(lecture.Id, lecture.TitleAr, lecture.TitleEn, lecture.SequenceNumber,
-                lecture.StartsAtUtc, expires > DateTimeOffset.UtcNow, expires, presence);
+                lecture.StartsAtUtc, expires > DateTimeOffset.UtcNow, expires, presence, lecture.Mode,
+                lecture.OnlineLink);
         }).ToList();
         var myOutcome = ownEnrollment is null ? ExamOutcome.NotRecorded :
             results.FirstOrDefault(x => x.EnrollmentId == ownEnrollment.Id)?.Outcome ?? ExamOutcome.NotRecorded;
@@ -339,11 +342,19 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
             store.AddEnrollment(enrollment);
         }
         else enrollment.IsActive = true;
-        await store.SaveAsync(ct); return enrollment;
+        await store.SaveAsync(ct);
+        await notifications.NotifyAsync(participantId, NotificationKinds.CourseApproved,
+            "أُضفت إلى دورة تدريبية", "You were added to a course",
+            course.TitleAr, course.TitleAr, "/member.html?course=" + courseId, ct);
+        return enrollment;
     }
 
     public async Task<Lecture> AddLectureAsync(Guid userId, Guid courseId, string titleAr, string? titleEn,
         DateTimeOffset? startsAtUtc, CancellationToken ct)
+        => await AddLectureAsync(userId, courseId, titleAr, titleEn, startsAtUtc, DeliveryMode.InPerson, null, ct);
+
+    public async Task<Lecture> AddLectureAsync(Guid userId, Guid courseId, string titleAr, string? titleEn,
+        DateTimeOffset? startsAtUtc, DeliveryMode mode, string? onlineLink, CancellationToken ct)
     {
         var actor = await GetActorAsync(userId, ct);
         await RequireAsync(actor, PermissionKeys.ManageLectures, ct);
@@ -352,16 +363,115 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
             throw new InvalidOperationException("Cannot add a lecture in this course state.");
         if (string.IsNullOrWhiteSpace(titleAr) || titleAr.Length > 300 || titleEn?.Length > 300)
             throw new ArgumentException("Invalid lecture title.");
+        if (!Enum.IsDefined(mode)) throw new ArgumentException("Invalid delivery mode.");
+        if (onlineLink is { Length: > 1000 }) throw new ArgumentException("Online link is too long.");
+        if (mode == DeliveryMode.Online && string.IsNullOrWhiteSpace(onlineLink))
+            throw new ArgumentException("An online lecture requires a session link.");
         var lectures = await store.LecturesAsync(courseId, ct);
         var lecture = new Lecture
         {
             CourseId = courseId, TitleAr = titleAr.Trim(), TitleEn = Clean(titleEn), StartsAtUtc = startsAtUtc,
-            SequenceNumber = lectures.Count + 1,
+            SequenceNumber = lectures.Count + 1, Mode = mode, OnlineLink = Clean(onlineLink),
             AttendanceCode = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4")
         };
         store.AddLecture(lecture); course.Status = CourseStatus.InProgress;
-        await store.SaveAsync(ct); return lecture;
+        await store.SaveAsync(ct);
+
+        var enrolled = await store.EnrollmentsAsync(courseId, ct);
+        await notifications.NotifyManyAsync(enrolled.Select(x => x.UserId), NotificationKinds.LectureAdded,
+            "أُضيفت محاضرة جديدة", "A new lecture was added",
+            course.TitleAr + " — " + lecture.TitleAr, course.TitleAr + " — " + lecture.TitleAr,
+            "/member.html?course=" + courseId, ct);
+        return lecture;
     }
+
+    /// <summary>تعديل موعد أو نمط أو رابط جلسة قائمة (يتطلب صلاحية إدارة المحاضرات).</summary>
+    public async Task<Lecture> UpdateLectureAsync(Guid userId, Guid lectureId, DateTimeOffset? startsAtUtc,
+        DeliveryMode mode, string? onlineLink, CancellationToken ct)
+    {
+        var actor = await GetActorAsync(userId, ct);
+        await RequireAsync(actor, PermissionKeys.ManageLectures, ct);
+        var lecture = await RequiredLectureAsync(lectureId, ct);
+        var course = await RequiredCourseAsync(lecture.CourseId, ct);
+        EnsureOperator(actor, course);
+        if (!Enum.IsDefined(mode)) throw new ArgumentException("Invalid delivery mode.");
+        if (onlineLink is { Length: > 1000 }) throw new ArgumentException("Online link is too long.");
+        if (mode == DeliveryMode.Online && string.IsNullOrWhiteSpace(onlineLink))
+            throw new ArgumentException("An online lecture requires a session link.");
+        lecture.StartsAtUtc = startsAtUtc;
+        lecture.Mode = mode;
+        lecture.OnlineLink = Clean(onlineLink);
+        await store.SaveAsync(ct);
+        return lecture;
+    }
+
+    // ------------------------------------------------------------ مرفقات المحاضرات
+
+    public async Task<IReadOnlyList<LectureMaterialView>> MaterialsAsync(Guid userId, Guid lectureId,
+        CancellationToken ct)
+    {
+        var actor = await GetActorAsync(userId, ct);
+        await RequireAsync(actor, PermissionKeys.ViewCourses, ct);
+        var lecture = await RequiredLectureAsync(lectureId, ct);
+        var course = await RequiredCourseAsync(lecture.CourseId, ct);
+        var enrollment = await store.EnrollmentAsync(lecture.CourseId, userId, ct);
+        var canBrowse = actor.IsQuality || course.InstructorUserId == userId ||
+            enrollment?.IsActive == true || CanSelfEnroll(actor, course, enrollment?.IsActive == true);
+        if (!canBrowse) throw new UnauthorizedAccessException();
+        return (await store.MaterialsAsync(lectureId, ct)).Select(x => new LectureMaterialView(x.Id,
+            x.LectureId, x.OriginalName, x.Sha256, x.CreatedAtUtc)).ToList();
+    }
+
+    public async Task<LectureMaterialView> AddMaterialAsync(Guid userId, Guid lectureId, Stream content,
+        string originalName, CancellationToken ct)
+    {
+        var actor = await GetActorAsync(userId, ct);
+        await RequireAsync(actor, PermissionKeys.ManageLectureMaterials, ct);
+        var lecture = await RequiredLectureAsync(lectureId, ct);
+        var course = await RequiredCourseAsync(lecture.CourseId, ct);
+        EnsureOperator(actor, course);
+        var saved = await files.SaveAsync(content, originalName, ct);
+        var material = new LectureMaterial
+        {
+            LectureId = lectureId, OriginalName = saved.OriginalName, StorageKey = saved.StorageKey,
+            Sha256 = saved.Sha256, UploadedByUserId = userId
+        };
+        store.AddMaterial(material);
+        try { await store.SaveAsync(ct); }
+        catch
+        {
+            await files.DeleteAsync(saved.StorageKey, CancellationToken.None);
+            throw;
+        }
+        return new LectureMaterialView(material.Id, lectureId, material.OriginalName, material.Sha256,
+            material.CreatedAtUtc);
+    }
+
+    public async Task<CourseDownload> OpenMaterialAsync(Guid userId, Guid materialId, CancellationToken ct)
+    {
+        var actor = await GetActorAsync(userId, ct);
+        await RequireAsync(actor, PermissionKeys.ViewCourses, ct);
+        var material = await store.MaterialAsync(materialId, ct)
+            ?? throw new KeyNotFoundException("Material not found.");
+        var lecture = await RequiredLectureAsync(material.LectureId, ct);
+        var course = await RequiredCourseAsync(lecture.CourseId, ct);
+        var enrollment = await store.EnrollmentAsync(course.Id, userId, ct);
+        var canBrowse = actor.IsQuality || course.InstructorUserId == userId || enrollment?.IsActive == true ||
+            CanSelfEnroll(actor, course, enrollment?.IsActive == true);
+        if (!canBrowse) throw new UnauthorizedAccessException();
+        var stream = await files.OpenReadAsync(material.StorageKey, ct)
+            ?? throw new KeyNotFoundException("Material file is missing.");
+        return new CourseDownload(stream, material.OriginalName, ContentTypeFor(material.OriginalName));
+    }
+
+    private static string ContentTypeFor(string fileName) => Path.GetExtension(fileName).ToLowerInvariant() switch
+    {
+        ".pdf" => "application/pdf",
+        ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        _ => "application/octet-stream"
+    };
 
     public async Task<Lecture> ActivateCodeAsync(Guid userId, Guid lectureId, CancellationToken ct)
     {
@@ -424,7 +534,9 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
         if ((await store.LecturesAsync(courseId, ct)).Count == 0)
             throw new InvalidOperationException("At least one lecture is required before ending a course.");
         course.Status = CourseStatus.Ended; course.EndedAtUtc = DateTimeOffset.UtcNow;
-        await store.SaveAsync(ct); return course;
+        await store.SaveAsync(ct);
+        await certificates.IssueForCourseCoreAsync(courseId, userId, ct);
+        return course;
     }
 
     public async Task<Exam> CreateExamAsync(Guid userId, Guid courseId, string nameAr, string? nameEn,
@@ -464,6 +576,7 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
         }
         course.HasExam = required;
         await store.SaveAsync(ct);
+        await certificates.ReconcileAsync(courseId, userId, ct);
         return course;
     }
 
@@ -487,7 +600,9 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
             store.AddExamResult(result);
         }
         else { result.Outcome = outcome; result.RecordedByUserId = userId; }
-        await store.SaveAsync(ct); return result;
+        await store.SaveAsync(ct);
+        await certificates.ReconcileEnrollmentAsync(courseId, enrollmentId, userId, ct);
+        return result;
     }
 
     private async Task<AttendanceRecord> SaveAttendanceAsync(Lecture lecture, CourseEnrollment enrollment,
@@ -505,7 +620,130 @@ public sealed class CourseWorkflowService(ICourseStore store, IAuthStore auth, I
             record.IsPresent = present; record.SetByInstructor = manual; record.LastChangedByUserId = actorId;
             record.IsActive = true;
         }
-        await store.SaveAsync(ct); return record;
+        await store.SaveAsync(ct);
+        await certificates.ReconcileEnrollmentAsync(lecture.CourseId, enrollment.Id, actorId, ct);
+        return record;
+    }
+
+    /// <summary>
+    /// إدخال دورة تاريخية منتهية مع محاضراتها ومشاركيها وتوثيق شروط الشهادة، ثم إصدار الشهادات
+    /// للمستحقين فوراً (القسم 12 من المواصفات).
+    /// </summary>
+    public async Task<Course> CreateHistoricalAsync(Guid userId, HistoricalCourseInput input, CancellationToken ct)
+    {
+        var actor = await GetActorAsync(userId, ct);
+        await RequireAsync(actor, PermissionKeys.ImportHistoricalCourses, ct);
+        if (!actor.IsQuality) throw new UnauthorizedAccessException();
+
+        if (string.IsNullOrWhiteSpace(input.TitleAr) || input.TitleAr.Length > 500 || input.TitleEn?.Length > 500 ||
+            string.IsNullOrWhiteSpace(input.ObjectivesAr) || input.ObjectivesAr.Length > 4000 ||
+            string.IsNullOrWhiteSpace(input.TargetAudienceAr) || input.TargetAudienceAr.Length > 1000 ||
+            input.PlannedHours <= 0 || input.EndUtc <= input.StartUtc ||
+            !Enum.IsDefined(input.DeliveryMode))
+            throw new ArgumentException("Invalid historical course details.");
+        if (input.LectureCount is < 1 or > 200)
+            throw new ArgumentException("A historical course needs 1 to 200 lectures.");
+        if (!await store.TrackExistsAsync(input.TrainingTrackId, ct))
+            throw new ArgumentException("Training track not found.");
+        var participants = (input.Participants ?? []).ToList();
+        if (participants.Count > 2000) throw new ArgumentException("Too many participants.");
+        if (participants.Select(x => x.UserId).Distinct().Count() != participants.Count)
+            throw new ArgumentException("Duplicate participants.");
+        foreach (var row in participants)
+        {
+            if (row.AttendedLectures < 0 || row.AttendedLectures > input.LectureCount)
+                throw new ArgumentException("Attended lectures exceed the course lectures.");
+            var user = await store.UserAsync(row.UserId, ct);
+            if (user is null || !user.IsActive || user.IsExternalTrainer)
+                throw new ArgumentException("A participant account is unavailable.");
+        }
+
+        UserAccount? instructor = null;
+        if (input.InstructorUserId.HasValue)
+        {
+            instructor = await store.UserAsync(input.InstructorUserId.Value, ct);
+            if (instructor is null || !instructor.IsActive) throw new ArgumentException("Instructor not found.");
+        }
+        var actualName = instructor?.NameAr ?? Clean(input.ActualInstructorNameAr);
+        if (string.IsNullOrWhiteSpace(actualName)) throw new ArgumentException("Instructor name is required.");
+
+        var course = new Course
+        {
+            TitleAr = input.TitleAr.Trim(), TitleEn = Clean(input.TitleEn), FacultyId = input.FacultyId,
+            TrainingTrackId = input.TrainingTrackId, ObjectivesAr = input.ObjectivesAr.Trim(),
+            ObjectivesEn = Clean(input.ObjectivesEn), TargetAudienceAr = input.TargetAudienceAr.Trim(),
+            TargetAudienceEn = Clean(input.TargetAudienceEn), DeliveryMode = input.DeliveryMode,
+            PlannedHours = input.PlannedHours, PlannedStartUtc = input.StartUtc, PlannedEndUtc = input.EndUtc,
+            CreatedByUserId = userId, InstructorUserId = instructor?.Id, ActualInstructorNameAr = actualName,
+            ActualInstructorNameEn = instructor?.NameEn ?? Clean(input.ActualInstructorNameEn),
+            HasExam = input.HasExam, IsHistorical = true,
+            EnrollmentMode = input.EnrollmentModeSelfRegistration ? EnrollmentMode.SelfRegistration
+                : EnrollmentMode.QualitySelection,
+            EvaluationFormVersionId = (await store.LatestEvaluationVersionAsync(ct))?.Id,
+            Status = CourseStatus.Ended, EndedAtUtc = input.EndUtc
+        };
+        store.AddCourse(course);
+
+        var lectures = new List<Lecture>();
+        for (var i = 1; i <= input.LectureCount; i++)
+        {
+            var lecture = new Lecture
+            {
+                CourseId = course.Id,
+                TitleAr = "الجلسة " + i,
+                TitleEn = "Session " + i,
+                SequenceNumber = i,
+                StartsAtUtc = null,
+                Mode = input.DeliveryMode,
+                AttendanceCode = RandomNumberGenerator.GetInt32(0, 10000).ToString("D4")
+            };
+            lectures.Add(lecture);
+            store.AddLecture(lecture);
+        }
+
+        Exam? exam = null;
+        if (input.HasExam)
+        {
+            exam = new Exam
+            {
+                CourseId = course.Id,
+                NameAr = string.IsNullOrWhiteSpace(input.ExamNameAr) ? "امتحان الدورة" : input.ExamNameAr.Trim(),
+                NameEn = Clean(input.ExamNameEn)
+            };
+            store.AddExam(exam);
+        }
+
+        foreach (var row in participants)
+        {
+            var enrollment = new CourseEnrollment
+            {
+                CourseId = course.Id, UserId = row.UserId,
+                LegacyEvaluationConfirmed = row.EvaluationConfirmed,
+                LegacyImpactConfirmed = row.ImpactConfirmed
+            };
+            store.AddEnrollment(enrollment);
+            for (var i = 0; i < row.AttendedLectures; i++)
+                store.AddAttendance(new AttendanceRecord
+                {
+                    LectureId = lectures[i].Id, EnrollmentId = enrollment.Id, IsPresent = true,
+                    SetByInstructor = true, LastChangedByUserId = userId
+                });
+            if (exam is not null && row.ExamOutcome is ExamOutcome.Passed or ExamOutcome.Failed)
+                store.AddExamResult(new ExamResult
+                {
+                    ExamId = exam.Id, EnrollmentId = enrollment.Id, Outcome = row.ExamOutcome,
+                    RecordedByUserId = userId
+                });
+        }
+
+        store.AddAudit(new Domain.Settings.AuditEvent
+        {
+            ActorUserId = userId, ActionKey = "course.historical.created", EntityType = "Course",
+            EntityId = course.Id, Reason = $"{input.LectureCount} lectures; {participants.Count} participants"
+        });
+        await store.SaveAsync(ct);
+        await certificates.IssueForCourseCoreAsync(course.Id, userId, ct);
+        return course;
     }
 
     private async Task<Course> RequiredCourseAsync(Guid id, CancellationToken ct)

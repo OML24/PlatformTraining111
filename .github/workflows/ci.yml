@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: بناء واختبار
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: تهيئة .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            10.0.x
+
+      - name: استعادة الحزم
+        run: dotnet restore ZU.Training.sln
+
+      - name: البناء
+        run: dotnet build ZU.Training.sln -c Release --no-restore
+
+      - name: الاختبارات
+        run: dotnet test ZU.Training.sln -c Release --no-build --logger "console;verbosity=normal"
+
+      - name: أدوات .NET المحلية
+        run: dotnet tool restore || true
+
+  scripts:
+    name: فحص الواجهة والسكربتات
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: فحص صحة ملفات JavaScript
+        run: |
+          set -e
+          for file in src/ZU.Training.WebPortal/wwwroot/js/*.js; do
+            node --check "$file"
+          done
+
+      - name: فحص ترجمة الواجهة
+        run: |
+          node -e '
+          const fs = require("fs");
+          global.window = {};
+          eval(fs.readFileSync("src/ZU.Training.WebPortal/wwwroot/js/i18n.js", "utf8"));
+          const ar = Object.keys(window.ZU_LABELS.ar), en = Object.keys(window.ZU_LABELS.en);
+          const missingEn = ar.filter(k => !en.includes(k));
+          const missingAr = en.filter(k => !ar.includes(k));
+          if (missingEn.length || missingAr.length) {
+            console.error("مفاتيح ناقصة:", missingEn, missingAr);
+            process.exit(1);
+          }
+          console.log("مفاتيح الترجمة متطابقة:", ar.length);
+          '
+
+      - name: مطابقة مسارات الواجهة مع الـAPI
+        run: python3 scripts/route-audit.py
+
+      - name: فحص تماسك الطبقات
+        run: python3 scripts/static-audit.py
+
+  docker:
+    name: بناء صورة Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: بناء الصورة
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: zu-training-platform:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

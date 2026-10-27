@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>لوحة عميد الكلية | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="dean">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="dean">لوحة عميد الكلية</h1>
+      <p class="page-subtitle">اقتراح الدورات وتكليف المحاضرين، الاحتياجات التدريبية، كتب الإلغاء، ومتابعة إحصاءات الكلية.</p>
+
+      <div class="stat-grid" id="dean-stats"></div>
+
+      <ul class="nav nav-tabs" id="dean-tabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="courses" data-i18n="courses">دورات الكلية</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="propose" data-i18n="proposeCourse">اقتراح دورة وتكليف</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="needs" data-i18n="trainingNeeds">الاحتياجات التدريبية</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="cancel" data-i18n="cancellations">طلبات الإلغاء</button></li>
+      </ul>
+
+      <section class="panel" id="tab-courses">
+        <div class="panel-heading">
+          <div><h2 data-i18n="courses">دورات الكلية</h2><p>كل دورات كليتك بجميع حالاتها.</p></div>
+          <button class="btn btn-sm btn-outline-primary" id="refresh-dean" data-i18n="refresh">تحديث</button>
+        </div>
+        <div id="dean-courses"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section class="panel d-none" id="tab-propose">
+        <div class="panel-heading"><div><h2 data-i18n="proposeCourse">اقتراح دورة وتكليف</h2>
+          <p>المحاضر من أعضاء كليتك فقط، أو خبير خارجي مع كتاب رسمي وسيرة ذاتية.</p></div></div>
+        <div id="propose-message" class="alert d-none"></div>
+        <form id="propose-form" class="row g-3">
+          <div class="col-md-6"><label class="form-label" data-i18n="titleAr">العنوان بالعربية</label>
+            <input id="p-title" class="form-control" maxlength="300" data-hint="course.titleAr" required></div>
+          <div class="col-md-6"><label class="form-label">Title (English, optional)</label>
+            <input id="p-title-en" class="form-control" dir="ltr" maxlength="300"></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="track">المسار التدريبي</label>
+            <select id="p-track" class="form-select" required></select></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="mode">طريقة التنفيذ</label>
+            <select id="p-mode" class="form-select">
+              <option value="0" data-i18n="inPerson">حضوري</option>
+              <option value="1" data-i18n="online">عن بعد</option>
+              <option value="2" data-i18n="hybrid">مدمج</option>
+            </select></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="plannedHours">الساعات المعتمدة</label>
+            <input id="p-hours" class="form-control" type="number" min="1" step="0.5" value="6" required></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="startAt">البداية</label>
+            <input id="p-start" class="form-control" data-datetime required></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="endAt">النهاية</label>
+            <input id="p-end" class="form-control" data-datetime required></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="evaluationDeadline">آخر موعد للتقييم</label>
+            <input id="p-eval" class="form-control" data-datetime></div>
+          <div class="col-12"><label class="form-label" data-i18n="objectivesAr">الأهداف</label>
+            <textarea id="p-obj" class="form-control" rows="3" maxlength="2000" required></textarea></div>
+          <div class="col-md-6"><label class="form-label" data-i18n="audienceAr">الفئة المستهدفة</label>
+            <input id="p-audience" class="form-control" maxlength="500" required></div>
+          <div class="col-md-6"><label class="form-label" data-i18n="enrollmentMode">طريقة الالتحاق</label>
+            <select id="p-enroll" class="form-select">
+              <option value="0" data-i18n="selfEnroll">تسجيل ذاتي</option>
+              <option value="1" data-i18n="nomination">ترشيح</option>
+            </select></div>
+          <div class="col-12"><hr><h3 class="h6" data-i18n="instructorAssignment">تكليف المحاضر</h3></div>
+          <div class="col-md-4">
+            <label class="form-label" data-i18n="instructorSource">مصدر المحاضر</label>
+            <select id="p-source" class="form-select">
+              <option value="internal" data-i18n="fromMyFaculty">من أعضاء كليتي</option>
+              <option value="external" data-i18n="externalExpert">خبير من خارج الجامعة</option>
+            </select>
+          </div>
+          <div class="col-md-8" id="internal-box">
+            <label class="form-label" data-i18n="searchInstructor">بحث عن المحاضر</label>
+            <div class="d-flex gap-2">
+              <input id="p-search" class="form-control" placeholder="الاسم أو الرقم الوظيفي">
+              <button class="btn btn-outline-primary" id="p-search-btn" type="button" data-i18n="search">بحث</button>
+            </div>
+            <input type="hidden" id="p-instructor-id">
+            <div id="p-search-results" class="mt-2 small-muted"></div>
+          </div>
+          <div class="col-12 d-none" id="external-box">
+            <div class="row g-2">
+              <div class="col-md-4"><input id="p-ext-name" class="form-control" placeholder="اسم الخبير"></div>
+              <div class="col-md-4"><input id="p-ext-org" class="form-control" placeholder="جهة العمل"></div>
+              <div class="col-md-4"><input id="p-ext-email" type="email" class="form-control" placeholder="البريد الإلكتروني"></div>
+              <div class="col-md-6"><label class="form-label">الكتاب الرسمي (PDF/DOCX)</label>
+                <input id="p-ext-letter" type="file" class="form-control" accept=".pdf,.docx"></div>
+              <div class="col-md-6"><label class="form-label">السيرة الذاتية (CV)</label>
+                <input id="p-ext-cv" type="file" class="form-control" accept=".pdf,.docx"></div>
+            </div>
+          </div>
+          <div class="col-12 d-flex gap-4">
+            <div class="form-check"><input id="p-exam" class="form-check-input" type="checkbox">
+              <label class="form-check-label" for="p-exam" data-i18n="hasExam">يتضمن امتحاناً</label></div>
+          </div>
+          <div class="col-12"><button class="btn btn-primary" type="submit" data-i18n="save">إرسال المقترح للجودة</button></div>
+        </form>
+      </section>
+
+      <section class="panel d-none" id="tab-needs">
+        <div class="panel-heading"><div><h2 data-i18n="trainingNeeds">الاحتياجات التدريبية</h2>
+          <p>تُرفع إلى دائرة الجودة فقط مع الكتاب الرسمي.</p></div></div>
+        <div id="need-message" class="alert d-none"></div>
+        <form id="dean-need-form" class="row g-2 mb-4">
+          <div class="col-md-4"><input id="dn-title" class="form-control" placeholder="عنوان الاحتياج" required></div>
+          <div class="col-md-4"><input id="dn-desc" class="form-control" placeholder="الوصف" required></div>
+          <div class="col-md-4"><input id="dn-file" type="file" class="form-control" accept=".pdf,.docx" required></div>
+          <div class="col-12"><button class="btn btn-primary" type="submit" data-i18n="save">إرسال إلى الجودة</button></div>
+        </form>
+        <div id="dean-needs"></div>
+      </section>
+
+      <section class="panel d-none" id="tab-cancel">
+        <div class="panel-heading"><div><h2 data-i18n="cancelCourse">طلب إلغاء دورة</h2>
+          <p>يُرفق الكتاب الرسمي الموقّع، وتُعتمد موافقة دائرة الجودة قبل الأرشفة.</p></div></div>
+        <div id="cancel-message" class="alert d-none"></div>
+        <form id="dean-cancel-form" class="row g-2 mb-4">
+          <div class="col-md-5"><select id="dc-course" class="form-select" required></select></div>
+          <div class="col-md-7"><input id="dc-reason" class="form-control" placeholder="سبب الإلغاء" maxlength="1000" required></div>
+          <div class="col-md-8"><input id="dc-file" type="file" class="form-control" accept=".pdf,.docx" required></div>
+          <div class="col-md-4"><button class="btn btn-outline-danger w-100" type="submit" data-i18n="cancelCourse">إرسال طلب الإلغاء</button></div>
+        </form>
+        <div id="dean-cancel"></div>
+      </section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/dean.js"></script>
+</body>
+</html>

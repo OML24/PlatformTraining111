@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>دليل الأعضاء | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="directory">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="members">دليل الأعضاء</h1>
+      <p class="page-subtitle">البحث في أعضاء هيئة التدريس والموظفين بحسب الكلية والقسم.</p>
+
+      <section class="panel">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4"><label class="form-label" data-i18n="search">بحث</label>
+            <input id="dir-query" class="form-control" placeholder="الاسم أو الرقم الوظيفي"></div>
+          <div class="col-md-3"><label class="form-label" data-i18n="faculty">الكلية</label>
+            <select id="dir-faculty" class="form-select"><option value="">—</option></select></div>
+          <div class="col-md-3"><label class="form-label" data-i18n="department">القسم</label>
+            <select id="dir-department" class="form-select"><option value="">—</option></select></div>
+          <div class="col-md-2"><button class="btn btn-primary w-100" id="dir-search" data-i18n="search">بحث</button></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div id="dir-results" class="card-grid"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/directory.js"></script>
+</body>
+</html>

@@ -3,30 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>منصة التدريب والتطوير المهني | جامعة الزرقاء</title>
+  <meta name="robots" content="noindex,nofollow">
+  <title>تسجيل الدخول | منصة التدريب والتطوير المهني — جامعة الزرقاء</title>
   <link rel="icon" type="image/png" href="/logo.png">
   <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
   <link rel="stylesheet" href="/css/app.css">
 </head>
-<body>
-  <header class="site-header">
-    <div class="container-xl d-flex align-items-center justify-content-between gap-3">
-      <div class="brand d-flex align-items-center gap-3">
-        <img src="/logo.png" alt="جامعة الزرقاء" width="52" height="52">
-        <div>
-          <strong data-i18n="brand">جامعة الزرقاء</strong>
-          <span data-i18n="platform">منصة التدريب والتطوير المهني</span>
-        </div>
-      </div>
-      <button type="button" id="language-toggle" class="btn btn-outline-primary btn-sm">English</button>
-    </div>
-  </header>
+<body data-page="login">
+  <header id="app-header" class="site-header"></header>
 
   <main class="container-xl page-shell">
     <section class="intro">
-      <span class="eyebrow" data-i18n="eyebrow">منصة الجامعة الرسمية</span>
+      <span class="eyebrow" data-i18n="brand">جامعة الزرقاء</span>
       <h1 data-i18n="heading">تطوير مهني يبدأ بخطوة واضحة</h1>
-      <p data-i18n="intro">ادخل برقمك الوظيفي لمتابعة الدورات والحضور والشهادات من مكان واحد.</p>
+      <p data-i18n="intro">ادخل برقمك الوظيفي لمتابعة الدورات والحضور والتقييم والشهادات من مكان واحد.</p>
       <div class="intro-points">
         <span data-i18n="point1">الدورات التدريبية</span>
         <span data-i18n="point2">الحضور والتقييم</span>
@@ -34,266 +24,59 @@
       </div>
     </section>
 
-    <section class="auth-card" aria-live="polite">
-      <div id="status-message" class="alert d-none" role="alert"></div>
-
-      <div id="login-view" class="d-none">
-        <h2 data-i18n="loginTitle">تسجيل الدخول</h2>
+    <section class="auth-card">
+      <div id="login-view">
+        <h2 data-i18n="login">تسجيل الدخول</h2>
         <p class="muted" data-i18n="loginHelp">أدخل الرقم الوظيفي وكلمة المرور الخاصة بك.</p>
+        <div id="login-message" class="alert d-none" role="alert"></div>
         <form id="login-form" novalidate>
           <div class="mb-3">
-            <label for="login-name" class="form-label" data-i18n="employeeNumber">الرقم الوظيفي</label>
-            <input id="login-name" class="form-control" inputmode="numeric" autocomplete="username" data-hint="auth.loginName" required>
+            <label class="form-label" for="login-name" data-i18n="employeeNumber">الرقم الوظيفي</label>
+            <input id="login-name" class="form-control" inputmode="numeric" autocomplete="username"
+                   data-hint="auth.loginName" required>
           </div>
           <div class="mb-3">
-            <label for="login-password" class="form-label" data-i18n="password">كلمة المرور</label>
-            <input id="login-password" type="password" class="form-control" autocomplete="current-password" data-hint="auth.password" required>
+            <label class="form-label" for="login-password" data-i18n="password">كلمة المرور</label>
+            <input id="login-password" type="password" class="form-control" autocomplete="current-password"
+                   data-hint="auth.password" required>
           </div>
-          <div class="form-check mb-4">
-            <input id="remember-me" class="form-check-input" type="checkbox" data-hint="auth.rememberMe">
-            <label for="remember-me" class="form-check-label" data-i18n="remember">تذكرني</label>
+          <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div class="form-check">
+              <input id="remember-me" class="form-check-input" type="checkbox">
+              <label class="form-check-label" for="remember-me" data-i18n="remember">تذكرني</label>
+            </div>
+            <button type="button" id="open-forgot" class="btn btn-link p-0" data-i18n="forgot">نسيت كلمة المرور؟</button>
           </div>
           <button type="submit" class="btn btn-primary w-100 action-button" data-i18n="login">دخول</button>
         </form>
-        <button id="open-verification" type="button" class="btn btn-link mt-2 p-0" data-i18n="verifyCertificate">التحقق من شهادة</button>
+        <hr class="my-4">
+        <a class="btn btn-outline-primary w-100" href="/verify.html" data-i18n="verifyCertificate">التحقق من شهادة</a>
       </div>
 
-      <div id="change-view" class="d-none">
-        <h2 data-i18n="changeTitle">تعيين كلمة مرور جديدة</h2>
-        <p class="muted" data-i18n="changeHelp">لأمان حسابك، غيّر كلمة المرور الأولية قبل استخدام المنصة.</p>
-        <form id="change-form" novalidate>
+      <div id="forgot-view" class="d-none">
+        <h2 data-i18n="forgot">نسيت كلمة المرور؟</h2>
+        <p class="muted">تُرسل كلمة المرور الحالية إلى بريدك الجامعي المسجل فقط بعد تطابق الرقم الوظيفي والبريد.</p>
+        <div id="forgot-message" class="alert d-none" role="alert"></div>
+        <form id="forgot-form" novalidate>
           <div class="mb-3">
-            <label for="old-password" class="form-label" data-i18n="oldPassword">كلمة المرور الأولية</label>
-            <input id="old-password" type="password" class="form-control" autocomplete="current-password" data-hint="auth.oldPassword" required>
-          </div>
-          <div class="mb-3">
-            <label for="new-password" class="form-label" data-i18n="newPassword">كلمة المرور الجديدة</label>
-            <input id="new-password" type="password" class="form-control" autocomplete="new-password" data-hint="auth.newPassword" required>
-            <div class="form-text" data-i18n="passwordRule">اتبع سياسة كلمة المرور الحالية.</div>
+            <label class="form-label" for="forgot-login" data-i18n="employeeNumber">الرقم الوظيفي</label>
+            <input id="forgot-login" class="form-control" inputmode="numeric" required>
           </div>
           <div class="mb-4">
-            <label for="confirm-password" class="form-label" data-i18n="confirmPassword">تأكيد كلمة المرور</label>
-            <input id="confirm-password" type="password" class="form-control" autocomplete="new-password" data-hint="auth.confirmPassword" required>
+            <label class="form-label" for="forgot-email" data-i18n="email">البريد الجامعي</label>
+            <input id="forgot-email" type="email" class="form-control" required>
           </div>
-          <button type="submit" class="btn btn-primary w-100 action-button" data-i18n="savePassword">حفظ والمتابعة</button>
+          <button type="submit" class="btn btn-primary w-100 action-button" data-i18n="sendReset">إرسال كلمة المرور</button>
+          <button type="button" id="back-to-login" class="btn btn-outline-secondary w-100 mt-2" data-i18n="back">رجوع</button>
         </form>
-      </div>
-
-      <div id="verification-view" class="d-none">
-        <h2 data-i18n="verifyCertificate">التحقق من شهادة</h2>
-        <form id="verification-form" class="mb-3">
-          <label for="verification-reference" class="form-label" data-i18n="certificateReference">الرقم المرجعي للشهادة</label>
-          <input id="verification-reference" class="form-control mb-3" maxlength="100" required>
-          <button class="btn btn-primary" type="submit" data-i18n="verify">تحقق</button>
-          <button id="back-to-login" class="btn btn-outline-secondary" type="button" data-i18n="login">دخول</button>
-        </form>
-        <div id="verification-result"></div>
-      </div>
-
-    </section>
-
-    <section id="dashboard-view" class="dashboard-view d-none">
-      <div class="dashboard-header">
-        <div>
-          <span class="eyebrow" data-i18n="workspace">مساحة العمل</span>
-          <h2 class="mt-3 mb-1"><span data-i18n="welcome">مرحبًا بك</span>، <span id="account-name"></span></h2>
-          <p id="account-role" class="muted mb-0"></p>
-        </div>
-        <button id="logout-button" type="button" class="btn btn-outline-primary" data-i18n="logout">تسجيل الخروج</button>
-      </div>
-
-      <section id="courses-workspace" class="mt-4">
-        <div class="workspace-panel mb-4">
-          <div class="panel-heading d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div><h3 data-i18n="coursesTitle">الدورات التدريبية</h3><p data-i18n="coursesHelp">الدورات المتاحة لك ومتابعة حالة المشاركة.</p></div>
-            <button id="open-course-form" type="button" class="btn btn-primary d-none" data-i18n="newCourse">إنشاء دورة</button>
-          </div>
-          <div id="course-message" class="alert d-none" role="alert"></div>
-          <div id="course-list" class="course-list"></div>
-        </div>
-
-        <div id="course-form-panel" class="workspace-panel mb-4 d-none">
-          <div class="panel-heading"><h3 data-i18n="courseFormTitle">بيانات الدورة</h3><p data-i18n="courseFormHelp">الحقول العربية مطلوبة، والإنجليزية اختيارية.</p></div>
-          <form id="course-form" class="row g-3">
-            <input id="course-edit-id" type="hidden">
-            <div class="col-lg-6"><label class="form-label" for="course-title-ar" data-i18n="courseTitleAr">اسم الدورة بالعربية</label><input id="course-title-ar" class="form-control" maxlength="500" data-hint="course.titleAr" required></div>
-            <div class="col-lg-6"><label class="form-label" for="course-title-en" data-i18n="courseTitleEn">اسم الدورة بالإنجليزية (اختياري)</label><input id="course-title-en" class="form-control" maxlength="500" data-hint="course.titleEn"></div>
-            <div class="col-lg-6"><label class="form-label" for="course-track" data-i18n="trainingTrack">المحور التدريبي</label><select id="course-track" class="form-select" data-hint="course.trainingTrack" required></select></div>
-            <div class="col-lg-6"><label class="form-label" for="course-mode" data-i18n="deliveryMode">نمط الانعقاد</label><select id="course-mode" class="form-select" data-hint="course.deliveryMode"><option value="0" data-i18n="inPerson">وجاهي</option><option value="1" data-i18n="online">عن بعد</option><option value="2" data-i18n="hybrid">مدمج</option></select></div>
-            <div class="col-12"><label class="form-label" for="course-objectives-ar" data-i18n="objectivesAr">الأهداف ونواتج التعلم بالعربية</label><textarea id="course-objectives-ar" class="form-control" rows="3" maxlength="4000" data-hint="course.objectivesAr" required></textarea></div>
-            <div class="col-12"><label class="form-label" for="course-objectives-en" data-i18n="objectivesEn">الأهداف بالإنجليزية (اختياري)</label><textarea id="course-objectives-en" class="form-control" rows="2" maxlength="4000" data-hint="course.objectivesEn"></textarea></div>
-            <div class="col-lg-6"><label class="form-label" for="course-audience-ar" data-i18n="audienceAr">الفئة المستهدفة بالعربية</label><input id="course-audience-ar" class="form-control" maxlength="1000" data-hint="course.audienceAr" required></div>
-            <div class="col-lg-6"><label class="form-label" for="course-audience-en" data-i18n="audienceEn">الفئة المستهدفة بالإنجليزية (اختياري)</label><input id="course-audience-en" class="form-control" maxlength="1000" data-hint="course.audienceEn"></div>
-            <div class="col-lg-4"><label class="form-label" for="course-hours" data-i18n="plannedHours">عدد الساعات</label><input id="course-hours" type="number" min="0.5" step="0.5" class="form-control" data-hint="course.plannedHours" required></div>
-            <div class="col-lg-4"><label class="form-label" for="course-start" data-i18n="startDate">موعد البداية (YYYY-MM-DD HH:mm)</label><input id="course-start" type="text" class="form-control" placeholder="2026-11-20 09:00" data-hint="course.plannedStart" required></div>
-            <div class="col-lg-4"><label class="form-label" for="course-end" data-i18n="endDate">موعد النهاية (YYYY-MM-DD HH:mm)</label><input id="course-end" type="text" class="form-control" placeholder="2026-11-20 15:00" data-hint="course.plannedEnd" required></div>
-            <div class="col-lg-6"><label class="form-label" for="course-faculty" data-i18n="faculty">الكلية (فارغ للدورة العامة)</label><select id="course-faculty" class="form-select" data-hint="course.faculty"></select></div>
-            <div class="col-lg-6"><label class="form-label" for="course-enrollment" data-i18n="enrollmentMode">طريقة الالتحاق</label><select id="course-enrollment" class="form-select" data-hint="course.enrollmentMode"><option value="0" data-i18n="selfRegistration">تسجيل ذاتي</option><option value="1" data-i18n="qualitySelection">اختيار الجودة للمشاركين</option></select></div>
-            <div class="col-lg-6"><label class="form-label" for="course-actual-instructor" data-i18n="actualInstructor">اسم المحاضر الفعلي بالعربية</label><input id="course-actual-instructor" class="form-control" maxlength="300" data-hint="course.actualInstructor" required></div>
-            <div class="col-lg-6"><label class="form-label" for="course-instructor-search" data-i18n="instructorSearch">ابحث عن حساب المحاضر بالاسم أو الرقم</label><input id="course-instructor-search" class="form-control" data-hint="course.instructorSearch"><select id="course-instructor-results" class="form-select mt-2"><option value="" data-i18n="manualInstructor">دون حساب محاضر</option></select></div>
-            <div class="col-lg-4"><div class="form-check mt-4"><input id="course-quality-operated" type="checkbox" class="form-check-input" data-hint="course.qualityOperated"><label for="course-quality-operated" class="form-check-label" data-i18n="qualityOperated">تدير الجودة الدورة القصيرة</label></div></div>
-            <div class="col-lg-4"><div class="form-check mt-4"><input id="course-has-exam" type="checkbox" class="form-check-input" data-hint="course.hasExam"><label for="course-has-exam" class="form-check-label" data-i18n="hasExam">الدورة مشروطة بامتحان</label></div></div>
-            <div class="col-lg-4"><label class="form-label" for="course-deadline" data-i18n="evaluationDeadline">نهاية فترة التقييم (للجودة)</label><input id="course-deadline" type="text" class="form-control" placeholder="2026-12-01 23:59" data-hint="course.evaluationDeadline"></div>
-            <div class="col-12 d-flex gap-2"><button type="submit" class="btn btn-primary" data-i18n="saveCourse">حفظ الدورة</button><button id="cancel-course-form" type="button" class="btn btn-outline-secondary" data-i18n="cancel">إلغاء</button></div>
-          </form>
-        </div>
-
-        <div id="course-details-panel" class="workspace-panel d-none">
-          <div class="panel-heading d-flex justify-content-between gap-2 flex-wrap"><div><h3 id="detail-title"></h3><p id="detail-meta"></p></div><button id="close-course-details" type="button" class="btn btn-outline-secondary" data-i18n="close">إغلاق</button></div>
-          <div id="course-detail-message" class="alert d-none"></div>
-          <div id="course-detail-content"></div>
-        </div>
-      </section>
-
-      <section id="quality-workspace" class="mt-4 d-none">
-        <nav class="nav nav-pills workspace-tabs gap-2 mb-4">
-          <button type="button" class="nav-link active" data-quality-tab="needs" data-i18n="needsTab">الاحتياجات التدريبية</button>
-          <button type="button" class="nav-link" data-quality-tab="cancellations" data-i18n="cancellationsTab">طلبات الإلغاء</button>
-        </nav>
-        <div id="quality-message" class="alert d-none"></div>
-        <section id="needs-panel" class="workspace-panel">
-          <div class="panel-heading"><h3 data-i18n="needsTitle">الاحتياجات التدريبية</h3><p data-i18n="needsHelp">يرفع العميد الاحتياج وكتابه الرسمي إلى الجودة فقط.</p></div>
-          <form id="need-form" class="row g-3 mb-4 d-none">
-            <input id="need-edit-id" type="hidden">
-            <div class="col-md-6"><label for="need-title-ar" class="form-label" data-i18n="needTitleAr">عنوان الاحتياج بالعربية</label><input id="need-title-ar" class="form-control" maxlength="500" data-hint="need.titleAr" required></div>
-            <div class="col-md-6"><label for="need-title-en" class="form-label" data-i18n="needTitleEn">العنوان بالإنجليزية (اختياري)</label><input id="need-title-en" class="form-control" maxlength="500" data-hint="need.titleEn"></div>
-            <div class="col-12"><label for="need-description-ar" class="form-label" data-i18n="needDescriptionAr">وصف الاحتياج بالعربية</label><textarea id="need-description-ar" class="form-control" rows="3" maxlength="4000" data-hint="need.descriptionAr" required></textarea></div>
-            <div class="col-12"><label for="need-description-en" class="form-label" data-i18n="needDescriptionEn">الوصف بالإنجليزية (اختياري)</label><textarea id="need-description-en" class="form-control" rows="2" maxlength="4000" data-hint="need.descriptionEn"></textarea></div>
-            <div class="col-md-6"><label for="need-faculty" class="form-label" data-i18n="faculty">الكلية</label><select id="need-faculty" class="form-select" data-hint="need.faculty"></select></div>
-            <div class="col-md-6"><label for="need-file" class="form-label" data-i18n="officialLetter">الكتاب الرسمي PDF أو DOCX</label><input id="need-file" type="file" class="form-control" accept=".pdf,.docx" data-hint="need.officialLetter"></div>
-            <div class="col-12"><button type="submit" class="btn btn-primary" data-i18n="submitNeed">رفع الاحتياج للجودة</button></div>
-          </form>
-          <div id="needs-list"></div>
-        </section>
-        <section id="cancellations-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><h3 data-i18n="cancellationsTitle">طلبات إلغاء الدورات</h3><p data-i18n="cancellationsHelp">لا تُلغى الدورة المعتمدة إلا بعد كتاب رسمي وقرار الجودة.</p></div>
-          <div id="cancellations-list"></div>
-        </section>
-      </section>
-
-      <div id="admin-workspace" class="d-none mt-4">
-        <nav class="nav nav-pills workspace-tabs gap-2 mb-4" aria-label="إدارة النظام">
-          <button type="button" class="nav-link active" data-admin-tab="hints" data-i18n="hintsTab">تلميحات الحقول</button>
-          <button type="button" class="nav-link" data-admin-tab="password" data-i18n="policyTab">سياسة كلمة المرور</button>
-          <button type="button" class="nav-link" data-admin-tab="templates" data-i18n="templatesTab">قالب الشهادة</button>
-          <button type="button" class="nav-link" data-admin-tab="users" data-i18n="usersTab">المستخدمون</button>
-          <button type="button" class="nav-link" data-admin-tab="role-permissions" data-i18n="rolePermissionsTab">صلاحيات الأدوار</button>
-          <button type="button" class="nav-link" data-admin-tab="university" data-i18n="universityTab">بيانات الجامعة</button>
-          <button type="button" class="nav-link" data-admin-tab="evaluation" data-i18n="evaluationTab">نموذج التقييم</button>
-          <button type="button" class="nav-link" data-admin-tab="admin-courses" data-i18n="adminCoursesTab">إدارة الدورات</button>
-        </nav>
-        <div id="admin-message" class="alert d-none" role="alert"></div>
-
-        <section id="hints-panel" class="workspace-panel">
-          <div class="panel-heading"><div><h3 data-i18n="hintsTitle">تلميحات الحقول</h3><p data-i18n="hintsHelp">يظهر النص عند لمس الحقل أو التركيز عليه، وتسري التعديلات مباشرة.</p></div></div>
-          <form id="hint-form" class="row g-3 align-items-end">
-            <input id="hint-id" type="hidden">
-            <div class="col-md-3"><label for="hint-screen" class="form-label" data-i18n="screenKey">مفتاح الشاشة</label><input id="hint-screen" class="form-control" maxlength="150" data-hint="settings.hintScreen" required></div>
-            <div class="col-md-3"><label for="hint-field" class="form-label" data-i18n="fieldKey">مفتاح الحقل</label><input id="hint-field" class="form-control" maxlength="150" data-hint="settings.hintField" required></div>
-            <div class="col-md-3"><label for="hint-ar" class="form-label" data-i18n="hintAr">التلميح بالعربية</label><input id="hint-ar" class="form-control" maxlength="2000" data-hint="settings.hintAr" required></div>
-            <div class="col-md-3"><label for="hint-en" class="form-label" data-i18n="hintEn">التلميح بالإنجليزية (اختياري)</label><input id="hint-en" class="form-control" maxlength="2000" data-hint="settings.hintEn"></div>
-            <div class="col-auto"><button type="submit" class="btn btn-primary" data-i18n="saveHint">حفظ التلميح</button></div>
-            <div class="col-auto"><button type="button" id="hint-reset" class="btn btn-outline-secondary" data-i18n="clear">إفراغ</button></div>
-          </form>
-          <div class="table-responsive mt-4"><table class="table table-hover align-middle"><thead><tr><th data-i18n="screenKey">مفتاح الشاشة</th><th data-i18n="fieldKey">مفتاح الحقل</th><th data-i18n="hintAr">التلميح بالعربية</th><th data-i18n="hintEn">الإنجليزية</th><th data-i18n="actions">إجراءات</th></tr></thead><tbody id="hints-body"></tbody></table></div>
-        </section>
-
-        <section id="password-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><div><h3 data-i18n="policyTitle">سياسة كلمة المرور</h3><p data-i18n="policyHelp">تطبق القواعد الجديدة عند تغيير كلمة المرور القادم، ولا تغيّر الكلمات الحالية.</p></div></div>
-          <form id="policy-form" class="row g-3">
-            <div class="col-md-3"><label for="policy-min" class="form-label" data-i18n="minimumLength">الحد الأدنى للأحرف</label><input id="policy-min" type="number" min="8" max="128" class="form-control" data-hint="settings.minimumLength" required></div>
-            <div class="col-md-3"><label for="policy-max" class="form-label" data-i18n="maximumLength">الحد الأعلى للأحرف</label><input id="policy-max" type="number" min="8" max="256" class="form-control" data-hint="settings.maximumLength" required></div>
-            <div class="col-12"><div class="form-check"><input id="policy-spaces" type="checkbox" class="form-check-input" data-hint="settings.allowSpaces"><label for="policy-spaces" class="form-check-label" data-i18n="allowSpaces">السماح بالمسافات</label></div></div>
-            <div class="col-12"><div class="form-check"><input id="policy-mix" type="checkbox" class="form-check-input" data-hint="settings.requireMix"><label for="policy-mix" class="form-check-label" data-i18n="requireMix">اشتراط حروف وأرقام</label></div></div>
-            <div class="col-12"><div class="form-check"><input id="policy-common" type="checkbox" class="form-check-input" data-hint="settings.blockCommon"><label for="policy-common" class="form-check-label" data-i18n="blockCommon">منع كلمات المرور الشائعة</label></div></div>
-            <div class="col-12"><button type="submit" class="btn btn-primary" data-i18n="savePolicy">حفظ السياسة</button></div>
-          </form>
-        </section>
-
-        <section id="templates-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><div><h3 data-i18n="templatesTitle">قالب الشهادة المعتمد</h3><p data-i18n="templatesHelp">ارفع قالب PDF الثابت في أي وقت. يحتفظ النظام بنسخ القوالب المستخدمة سابقًا.</p></div></div>
-          <form id="template-form" class="row g-3 align-items-end">
-            <div class="col-md-4"><label for="template-name-ar" class="form-label" data-i18n="templateNameAr">اسم القالب بالعربية</label><input id="template-name-ar" class="form-control" maxlength="300" data-hint="settings.templateNameAr" required></div>
-            <div class="col-md-4"><label for="template-name-en" class="form-label" data-i18n="templateNameEn">الاسم بالإنجليزية (اختياري)</label><input id="template-name-en" class="form-control" maxlength="300" data-hint="settings.templateNameEn"></div>
-            <div class="col-md-4"><label for="template-file" class="form-label" data-i18n="pdfFile">ملف PDF</label><input id="template-file" type="file" class="form-control" accept="application/pdf,.pdf" data-hint="settings.templateFile" required></div>
-            <div class="col-12"><button type="submit" class="btn btn-primary" data-i18n="uploadTemplate">رفع القالب</button></div>
-          </form>
-          <div class="table-responsive mt-4"><table class="table table-hover align-middle"><thead><tr><th data-i18n="version">النسخة</th><th data-i18n="templateNameAr">الاسم</th><th data-i18n="uploadDate">تاريخ الرفع</th><th data-i18n="actions">إجراءات</th></tr></thead><tbody id="templates-body"></tbody></table></div>
-        </section>
-
-        <section id="users-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><h3 data-i18n="usersTitle">إدارة المستخدمين</h3><p data-i18n="usersHelp">ابحث بالاسم أو رقم الدخول، ثم افتح التفاصيل والصلاحيات.</p></div>
-          <div class="d-flex flex-wrap gap-2 mb-4">
-            <input id="user-search" class="form-control search-input" data-hint="admin.userSearch" data-i18n-placeholder="userSearch" placeholder="الاسم أو الرقم الوظيفي">
-            <button id="user-search-button" class="btn btn-outline-primary" data-i18n="search">بحث</button>
-            <button id="open-user-form" class="btn btn-primary" data-i18n="newUser">إنشاء حساب</button>
-          </div>
-          <div id="user-list" class="table-responsive"></div>
-          <div id="user-form-panel" class="subpanel d-none mt-4">
-            <h4 data-i18n="newUser">إنشاء حساب</h4>
-            <form id="user-form" class="row g-3">
-              <div class="col-md-4"><label for="user-kind" class="form-label" data-i18n="accountType">نوع الحساب</label><select id="user-kind" class="form-select"><option value="employee" data-i18n="employee">موظف</option><option value="external" data-i18n="externalTrainer">محاضر خارجي</option></select></div>
-              <div class="col-md-4"><label for="user-employee-id" class="form-label" data-i18n="employeeNumber">الرقم الوظيفي</label><input id="user-employee-id" type="number" min="1" class="form-control" data-hint="admin.employeeId"></div>
-              <div class="col-md-4 d-none" id="external-login-wrap"><label for="user-external-login" class="form-label" data-i18n="externalLogin">رقم المحاضر الخارجي (4 أرقام)</label><input id="user-external-login" class="form-control" maxlength="4" data-hint="admin.externalLogin"></div>
-              <div class="col-md-6"><label for="user-name-ar" class="form-label" data-i18n="nameAr">الاسم بالعربية</label><input id="user-name-ar" class="form-control" data-hint="admin.nameAr" required></div>
-              <div class="col-md-6"><label for="user-name-en" class="form-label" data-i18n="nameEn">الاسم بالإنجليزية (اختياري)</label><input id="user-name-en" class="form-control" data-hint="admin.nameEn"></div>
-              <div class="col-md-6"><label for="user-email" class="form-label" data-i18n="email">البريد الإلكتروني</label><input id="user-email" type="email" class="form-control" data-hint="admin.email"></div>
-              <div class="col-md-6"><label for="user-faculty" class="form-label" data-i18n="faculty">الكلية</label><select id="user-faculty" class="form-select" data-hint="admin.faculty"></select></div>
-              <div class="col-md-6 d-none" id="external-password-wrap"><label for="user-external-password" class="form-label" data-i18n="externalPassword">كلمة مرور المحاضر الخارجي</label><input id="user-external-password" type="password" class="form-control" autocomplete="new-password" data-hint="admin.externalPassword"></div>
-              <div class="col-12"><span class="form-label d-block" data-i18n="rolesLabel">الأدوار</span><div id="create-role-list" class="role-checks"></div></div>
-              <div class="col-12 d-flex gap-2"><button type="submit" class="btn btn-primary" data-i18n="saveUser">حفظ الحساب</button><button id="cancel-user-form" type="button" class="btn btn-outline-secondary" data-i18n="cancel">إلغاء</button></div>
-            </form>
-          </div>
-          <div id="user-detail-panel" class="subpanel d-none mt-4">
-            <div class="d-flex justify-content-between align-items-center"><h4 id="user-detail-name"></h4><button id="close-user-details" type="button" class="btn btn-outline-secondary btn-sm" data-i18n="close">إغلاق</button></div>
-            <p id="user-detail-meta" class="muted"></p>
-            <div class="d-flex flex-wrap gap-2 mb-4">
-              <button id="show-credentials" type="button" class="btn btn-outline-primary" data-i18n="showPasswords">عرض كلمات المرور</button>
-              <button id="toggle-user-active" type="button" class="btn btn-outline-danger" data-i18n="disableUser">تعطيل الحساب</button>
-              <button id="toggle-user-access" type="button" class="btn btn-outline-primary" data-i18n="allowAccess">تجاوز حالة العمل</button>
-            </div>
-            <div id="credential-result" class="alert alert-warning d-none"></div>
-            <form id="admin-password-form" class="d-flex gap-2 mb-4"><input id="admin-new-password" type="password" autocomplete="new-password" class="form-control" data-hint="admin.newPassword" data-i18n-placeholder="newPassword" placeholder="كلمة المرور الجديدة" required><button class="btn btn-primary" type="submit" data-i18n="changePassword">تغيير كلمة المرور</button></form>
-            <h5 data-i18n="rolesLabel">الأدوار</h5><div id="edit-role-list" class="role-checks mb-3"></div><button id="save-user-roles" class="btn btn-outline-primary mb-4" data-i18n="saveRoles">حفظ الأدوار</button>
-            <h5 data-i18n="userPermissions">استثناءات صلاحيات المستخدم</h5><p class="muted" data-i18n="userPermissionsHelp">لكل صلاحية: اتباع الدور أو سماح أو منع، مع النتيجة الفعلية.</p>
-            <div id="user-permission-list" class="table-responsive"></div>
-          </div>
-          <div class="subpanel mt-4"><h4 data-i18n="sharedPassword">كلمة المرور الأولية المشتركة</h4><p class="muted" data-i18n="sharedHelp">تعمل فقط للموظف الذي لم يكمل أول دخول.</p><div class="d-flex flex-wrap gap-2"><button id="show-shared-password" class="btn btn-outline-primary" data-i18n="showShared">عرض الكلمة الحالية</button><input id="shared-new-password" type="password" autocomplete="new-password" class="form-control search-input" data-hint="admin.sharedPassword" data-i18n-placeholder="newShared" placeholder="كلمة جديدة"><button id="save-shared-password" class="btn btn-primary" data-i18n="saveShared">حفظ الكلمة المشتركة</button></div><div id="shared-result" class="alert alert-warning d-none mt-3"></div></div>
-        </section>
-
-        <section id="role-permissions-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><h3 data-i18n="rolePermissionsTitle">صلاحيات الأدوار</h3><p data-i18n="rolePermissionsHelp">تغيير الصلاحية الافتراضية ينعكس على جميع مستخدمي الدور ما لم يكن لديهم استثناء فردي.</p></div>
-          <label for="role-select" class="form-label" data-i18n="rolesLabel">الدور</label><select id="role-select" class="form-select role-select mb-4"></select>
-          <div id="role-permission-list" class="table-responsive"></div>
-        </section>
-
-        <section id="university-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><h3 data-i18n="universityTitle">مزامنة بيانات الجامعة</h3><p data-i18n="universityHelp">يجلب الزر الكليات والأقسام والموظفين إلى قاعدة المنصة، ويحافظ على كلمات المرور والأدوار المحلية.</p></div>
-          <button id="refresh-university" type="button" class="btn btn-primary mb-4" data-i18n="refreshUniversity">تحديث بيانات الجامعة</button>
-          <div id="university-result" class="alert d-none"></div>
-          <h4 class="section-title" data-i18n="syncRuns">آخر عمليات التحديث</h4><div id="sync-runs" class="table-responsive"></div>
-          <h4 class="section-title" data-i18n="missingEmployees">موظفون اختفوا من آخر استجابة مكتملة</h4><div id="missing-employees" class="table-responsive"></div>
-        </section>
-        <section id="evaluation-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><div><h3 data-i18n="evaluationTab">نموذج التقييم الموحد</h3><p data-i18n="evaluationAdminHelp">عند النشر تُحفظ نسخة جديدة، وتُطلب من المؤهلين في الدورات المفتوحة.</p></div></div>
-          <p id="evaluation-current" class="muted"></p>
-          <form id="evaluation-editor">
-            <div id="evaluation-questions"></div>
-            <div class="d-flex gap-2 flex-wrap mt-3">
-              <button type="button" id="add-evaluation-question" class="btn btn-outline-primary" data-i18n="addQuestion">إضافة سؤال</button>
-              <button type="submit" class="btn btn-primary" data-i18n="publishEvaluation">نشر نسخة جديدة</button>
-            </div>
-          </form>
-        </section>
-        <section id="admin-courses-panel" class="workspace-panel d-none">
-          <div class="panel-heading"><div><h3 data-i18n="adminCoursesTab">إدارة الدورات</h3><p data-i18n="adminCoursesHelp">تعطيل الدورة منطقيًا أو استعادتها، مع قرار ظهور شهاداتها.</p></div></div>
-          <div id="admin-courses-list" class="table-responsive"></div>
-        </section>
       </div>
     </section>
   </main>
 
   <script src="/vendor/jquery.min.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/login.js"></script>
 </body>
 </html>

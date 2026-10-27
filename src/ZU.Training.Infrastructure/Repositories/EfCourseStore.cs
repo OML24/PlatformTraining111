@@ -57,5 +57,16 @@ public sealed class EfCourseStore(TrainingDbContext db) : ICourseStore
     public void AddAttendance(AttendanceRecord x) => db.AttendanceRecords.Add(x);
     public void AddExam(Exam x) => db.Exams.Add(x);
     public void AddExamResult(ExamResult x) => db.ExamResults.Add(x);
+    public async Task<IReadOnlyList<LectureMaterial>> MaterialsAsync(Guid lectureId, CancellationToken ct)
+        => await db.LectureMaterials.AsNoTracking()
+            .Where(x => x.LectureId == lectureId && x.IsActive)
+            .OrderBy(x => x.CreatedAtUtc).ToListAsync(ct);
+    public Task<LectureMaterial?> MaterialAsync(Guid id, CancellationToken ct)
+        => db.LectureMaterials.SingleOrDefaultAsync(x => x.Id == id && x.IsActive, ct);
+    public void AddMaterial(LectureMaterial material) => db.LectureMaterials.Add(material);
+    public async Task<IReadOnlyList<CourseEnrollment>> EnrollmentsForUserAsync(Guid userId, CancellationToken ct)
+        => await db.CourseEnrollments.AsNoTracking()
+            .Where(x => x.UserId == userId && x.IsActive).ToListAsync(ct);
+    public void AddAudit(ZU.Training.Domain.Settings.AuditEvent auditEvent) => db.AuditEvents.Add(auditEvent);
     public Task SaveAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
 }

@@ -6,3 +6,6 @@
 **/appsettings.Local.json
 **/appsettings.Secrets.json
 **/.env
+**/storage/
+dist/
+*.log

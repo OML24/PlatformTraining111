@@ -30,6 +30,8 @@ public sealed class UserAccount : Entity
     public string? EncryptedInitialPassword { get; set; }
     public required string EncryptedCurrentPassword { get; set; }
     public DateTimeOffset? InitialEmailSentAtUtc { get; set; }
+    public CredentialEmailStatus InitialEmailStatus { get; set; } = CredentialEmailStatus.NotSent;
+    public string? InitialEmailLastError { get; set; }
     public int? SourceEmploymentStatusCode { get; set; }
     public int? SourceEmploymentCheck { get; set; }
     public int? SourceMainJobCode { get; set; }
@@ -43,6 +45,14 @@ public sealed class UserAccount : Entity
     public bool AccessOverrideAllow { get; set; }
     public int AuthVersion { get; set; }
     public string PreferredLanguage { get; set; } = "ar";
+}
+
+public enum CredentialEmailStatus
+{
+    NotSent = 0,
+    Sent = 1,
+    Failed = 2,
+    Uncertain = 3
 }
 
 public sealed class SharedInitialPassword : Entity

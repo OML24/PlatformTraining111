@@ -1,0 +1,99 @@
+# تشغيل المنصة كاملة بأمر واحد:  docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: zum-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zu_training}
+      POSTGRES_USER: ${POSTGRES_USER:-zu_training}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      TZ: Asia/Amman
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zu_training} -d ${POSTGRES_DB:-zu_training}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: .
+    image: zu-training-platform:latest
+    command: ["migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__TrainingDb: Host=db;Port=5432;Database=${POSTGRES_DB:-zu_training};Username=${POSTGRES_USER:-zu_training};Password=${POSTGRES_PASSWORD}
+      Security__EncryptionKey: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env}
+      Security__JwtSigningKey: ${JWT_SIGNING_KEY:?set JWT_SIGNING_KEY in .env}
+      WebPortal__Origin: ${PUBLIC_ORIGIN:-http://localhost:8080}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: zu-training-platform:latest
+    container_name: zum-api
+    restart: unless-stopped
+    command: ["api"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__TrainingDb: Host=db;Port=5432;Database=${POSTGRES_DB:-zu_training};Username=${POSTGRES_USER:-zu_training};Password=${POSTGRES_PASSWORD}
+      Security__EncryptionKey: ${ENCRYPTION_KEY}
+      Security__JwtSigningKey: ${JWT_SIGNING_KEY}
+      Security__SessionHours: ${SESSION_HOURS:-8}
+      Security__RememberDays: ${REMEMBER_DAYS:-30}
+      WebPortal__Origin: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      Portal__BaseUrl: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      Certificate__VerificationBaseUrl: ${PUBLIC_ORIGIN:-http://localhost:8080}/verify.html
+      Certificate__FontFamily: ${CERTIFICATE_FONT:-Noto Naskh Arabic}
+      Storage__OfficialDocumentsPath: /app/storage/official-documents
+      Storage__CertificateTemplatesPath: /app/storage/certificate-templates
+      Storage__CertificatesPath: /app/storage/certificates
+      Storage__CourseFilesPath: /app/storage/course-files
+      Email__Host: ${SMTP_HOST:-}
+      Email__Port: ${SMTP_PORT:-587}
+      Email__EnableSsl: ${SMTP_SSL:-true}
+      Email__UserName: ${SMTP_USER:-}
+      Email__Password: ${SMTP_PASSWORD:-}
+      Email__FromAddress: ${SMTP_FROM:-}
+      Email__FromName: ${SMTP_FROM_NAME:-منصة التدريب والتطوير المهني — جامعة الزرقاء}
+      University__Employees: ${UNIVERSITY_EMPLOYEES:-https://eservices.zu.edu.jo/ords/fees/qa/employees}
+      University__Departments: ${UNIVERSITY_DEPARTMENTS:-https://eservices.zu.edu.jo/ords/fees/qa/departments}
+      University__Faculties: ${UNIVERSITY_FACULTIES:-https://eservices.zu.edu.jo/ords/fees/qa/faculties}
+    volumes:
+      - storage:/app/storage
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/api/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  portal:
+    image: zu-training-platform:latest
+    container_name: zum-portal
+    restart: unless-stopped
+    command: ["portal"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Api__BaseUrl: http://api:8080
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${PORTAL_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+  storage:

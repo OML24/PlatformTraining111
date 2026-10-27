@@ -23,8 +23,25 @@ public sealed class AdminCoursesController(CourseAdminService service) : Control
     public Task<IActionResult> Restore(Guid id, CancellationToken ct)
         => Execute(() => service.RestoreAsync(ActorId(), id, ct));
 
+    [HttpGet("tracks")]
+    public Task<IActionResult> Tracks(CancellationToken ct)
+        => Execute(() => service.TracksAsync(ActorId(), ct));
+
+    [HttpPost("tracks")]
+    public Task<IActionResult> CreateTrack([FromBody] TrackInput input, CancellationToken ct)
+        => Execute(() => service.SaveTrackAsync(ActorId(), null, input, Ip(), ct));
+
+    [HttpPut("tracks/{id:guid}")]
+    public Task<IActionResult> UpdateTrack(Guid id, [FromBody] TrackInput input, CancellationToken ct)
+        => Execute(() => service.SaveTrackAsync(ActorId(), id, input, Ip(), ct));
+
+    [HttpPut("tracks/{id:guid}/active")]
+    public Task<IActionResult> TrackActive(Guid id, [FromBody] ActiveFlagRequest request, CancellationToken ct)
+        => Execute(() => service.SetTrackActiveAsync(ActorId(), id, request.IsActive, Ip(), ct));
+
     private Guid ActorId() => Guid.TryParse(User.FindFirstValue("sub"), out var id)
         ? id : throw new UnauthorizedAccessException();
+    private string? Ip() => HttpContext.Connection.RemoteIpAddress?.ToString();
 
     private async Task<IActionResult> Execute<T>(Func<Task<T>> action)
     {
@@ -37,3 +54,4 @@ public sealed class AdminCoursesController(CourseAdminService service) : Control
 }
 
 public sealed record DeactivateCourseRequest(bool HideCertificates, bool WarningAcknowledged);
+public sealed record ActiveFlagRequest(bool IsActive);

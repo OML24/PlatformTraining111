@@ -29,6 +29,31 @@ public sealed class EfQualityRequestStore(TrainingDbContext db) : IQualityReques
     public async Task<IReadOnlyList<OfficialDocument>> DocumentsAsync(string entityType, Guid entityId, CancellationToken ct)
         => await db.OfficialDocuments.AsNoTracking().Where(x => x.EntityType == entityType &&
             x.EntityId == entityId && x.IsActive).OrderBy(x => x.CreatedAtUtc).ToListAsync(ct);
+    public async Task<IReadOnlyList<CourseEnrollment>> EnrollmentsAsync(Guid courseId, CancellationToken ct)
+        => await db.CourseEnrollments.AsNoTracking()
+            .Where(x => x.CourseId == courseId && x.IsActive).ToListAsync(ct);
+    public async Task<IReadOnlyList<OfficialDocument>> VaultAsync(string? query, string? kind, Guid? entityId,
+        int skip, int take, CancellationToken ct)
+    {
+        var rows = db.OfficialDocuments.AsNoTracking().Where(x => x.IsActive);
+        if (!string.IsNullOrWhiteSpace(query))
+            rows = rows.Where(x => EF.Functions.ILike(x.OriginalName, $"%{query}%") ||
+                EF.Functions.ILike(x.EntityType, $"%{query}%"));
+        if (!string.IsNullOrWhiteSpace(kind)) rows = rows.Where(x => x.Kind == kind);
+        if (entityId.HasValue) rows = rows.Where(x => x.EntityId == entityId);
+        return await rows.OrderByDescending(x => x.CreatedAtUtc).Skip(skip).Take(take).ToListAsync(ct);
+    }
+    public async Task<int> VaultCountAsync(string? query, string? kind, Guid? entityId, CancellationToken ct)
+    {
+        var rows = db.OfficialDocuments.AsNoTracking().Where(x => x.IsActive);
+        if (!string.IsNullOrWhiteSpace(query))
+            rows = rows.Where(x => EF.Functions.ILike(x.OriginalName, $"%{query}%") ||
+                EF.Functions.ILike(x.EntityType, $"%{query}%"));
+        if (!string.IsNullOrWhiteSpace(kind)) rows = rows.Where(x => x.Kind == kind);
+        if (entityId.HasValue) rows = rows.Where(x => x.EntityId == entityId);
+        return await rows.CountAsync(ct);
+    }
+    public void AddAudit(ZU.Training.Domain.Settings.AuditEvent audit) => db.AuditEvents.Add(audit);
     public void AddNeed(TrainingNeed x) => db.TrainingNeeds.Add(x);
     public void AddCancellation(CourseCancellationRequest x) => db.CourseCancellationRequests.Add(x);
     public void AddDocument(OfficialDocument x) => db.OfficialDocuments.Add(x);

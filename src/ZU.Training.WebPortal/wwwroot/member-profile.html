@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>ملفي الشخصي | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="profile">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="profile">ملفي الشخصي</h1>
+      <p class="page-subtitle">بياناتي المهنية، شهاداتي، وحالة استحقاق الشهادة في كل دورة.</p>
+
+      <section class="panel">
+        <div class="panel-heading"><div><h2 data-i18n="professionalInfo">البيانات المهنية</h2>
+          <p>تظهر هذه البيانات في دليل الأعضاء.</p></div></div>
+        <div id="profile-message" class="alert d-none"></div>
+        <div id="profile-head" class="mb-3"></div>
+        <form id="profile-form" class="row g-3">
+          <div class="col-md-6"><label class="form-label" data-i18n="expertiseAr">مجالات الخبرة</label>
+            <input id="pf-expertise" class="form-control" maxlength="500"></div>
+          <div class="col-md-3"><label class="form-label" data-i18n="contactEmail">بريد التواصل</label>
+            <input id="pf-email" type="email" class="form-control" dir="ltr"></div>
+          <div class="col-md-3"><label class="form-label" data-i18n="phone">الهاتف</label>
+            <input id="pf-phone" class="form-control" dir="ltr" maxlength="40"></div>
+          <div class="col-md-4"><label class="form-label" data-i18n="office">المكتب</label>
+            <input id="pf-office" class="form-control" maxlength="120"></div>
+          <div class="col-md-8"><label class="form-label" data-i18n="bioAr">نبذة</label>
+            <textarea id="pf-bio" class="form-control" rows="2" maxlength="1000"></textarea></div>
+          <div class="col-12"><button class="btn btn-primary" type="submit" data-i18n="save">حفظ</button></div>
+        </form>
+      </section>
+
+      <section class="panel" id="certificates">
+        <div class="panel-heading"><div><h2 data-i18n="certificates">شهاداتي</h2>
+          <p>الشهادات الصادرة وحالة استحقاق الشهادة في الدورات التي شاركت بها.</p></div></div>
+        <div id="certificate-cards" class="card-grid"><div class="loading">جارٍ التحميل…</div></div>
+        <div id="participation-list" class="mt-4"></div>
+      </section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/profile.js"></script>
+</body>
+</html>

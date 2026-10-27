@@ -9,7 +9,8 @@ namespace ZU.Training.WebApi.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/courses")]
-public sealed class CoursesController(CourseWorkflowService workflow, CertificateGateService certificateGate) : ControllerBase
+public sealed class CoursesController(CourseWorkflowService workflow, CertificateGateService certificateGate,
+    QualityRequestService qualityRequests) : ControllerBase
 {
     [HttpGet]
     public Task<IActionResult> List(CancellationToken ct)
@@ -69,10 +70,70 @@ public sealed class CoursesController(CourseWorkflowService workflow, Certificat
     public Task<IActionResult> AddParticipant(Guid courseId, [FromBody] ParticipantRequest request, CancellationToken ct)
         => Execute(() => workflow.SelectParticipantAsync(CurrentUserId(), courseId, request.UserId, ct));
 
+    [HttpGet("{courseId:guid}/documents")]
+    public Task<IActionResult> Documents(Guid courseId, CancellationToken ct)
+        => Execute(() => qualityRequests.CourseDocumentsAsync(CurrentUserId(), courseId, ct));
+
+    /// <summary>إرفاق الكتاب الرسمي أو السيرة الذاتية لمحاضر خارجي في مقترح الدورة.</summary>
+    [HttpPost("{courseId:guid}/documents")]
+    [RequestSizeLimit(21 * 1024 * 1024)]
+    public async Task<IActionResult> AttachDocument(Guid courseId, [FromQuery] string kind, IFormFile? file,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length is < 5 or > 20 * 1024 * 1024)
+            return BadRequest(new { message = "A PDF or DOCX up to 20 MB is required." });
+        return await Execute(async () =>
+        {
+            await using var stream = file.OpenReadStream();
+            return await qualityRequests.AttachCourseDocumentAsync(CurrentUserId(), courseId, kind, stream,
+                file.FileName, ct);
+        });
+    }
+
     [HttpPost("{courseId:guid}/lectures")]
     public Task<IActionResult> AddLecture(Guid courseId, [FromBody] NamedRecordRequest request, CancellationToken ct)
         => Execute(() => workflow.AddLectureAsync(CurrentUserId(), courseId, request.NameAr, request.NameEn,
-            request.StartsAtUtc, ct));
+            request.StartsAtUtc, request.Mode, request.OnlineLink, ct));
+
+    [HttpPut("lectures/{lectureId:guid}")]
+    public Task<IActionResult> UpdateLecture(Guid lectureId, [FromBody] LectureUpdateRequest request,
+        CancellationToken ct)
+        => Execute(() => workflow.UpdateLectureAsync(CurrentUserId(), lectureId, request.StartsAtUtc,
+            request.Mode, request.OnlineLink, ct));
+
+    [HttpGet("lectures/{lectureId:guid}/materials")]
+    public Task<IActionResult> Materials(Guid lectureId, CancellationToken ct)
+        => Execute(() => workflow.MaterialsAsync(CurrentUserId(), lectureId, ct));
+
+    [HttpPost("lectures/{lectureId:guid}/materials")]
+    [RequestSizeLimit(41 * 1024 * 1024)]
+    public async Task<IActionResult> UploadMaterial(Guid lectureId, IFormFile? file, CancellationToken ct)
+    {
+        if (file is null || file.Length is < 5 or > 40 * 1024 * 1024)
+            return BadRequest(new { message = "A file of up to 40 MB is required." });
+        return await Execute(async () =>
+        {
+            await using var stream = file.OpenReadStream();
+            return await workflow.AddMaterialAsync(CurrentUserId(), lectureId, stream, file.FileName, ct);
+        });
+    }
+
+    [HttpGet("materials/{materialId:guid}/file")]
+    public async Task<IActionResult> DownloadMaterial(Guid materialId, CancellationToken ct)
+    {
+        try
+        {
+            var file = await workflow.OpenMaterialAsync(CurrentUserId(), materialId, ct);
+            Response.Headers.CacheControl = "private, max-age=300";
+            return File(file.Content, file.ContentType, file.FileName);
+        }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+    }
+
+    [HttpPost("historical")]
+    public Task<IActionResult> CreateHistorical([FromBody] HistoricalCourseInput input, CancellationToken ct)
+        => Execute(() => workflow.CreateHistoricalAsync(CurrentUserId(), input, ct));
 
     [HttpPost("lectures/{lectureId:guid}/activate-code")]
     public async Task<IActionResult> ActivateCode(Guid lectureId, CancellationToken ct)
@@ -146,7 +207,9 @@ public sealed class CoursesController(CourseWorkflowService workflow, Certificat
 public sealed record ApproveCourseRequest(DateTimeOffset EvaluationDeadlineUtc,
     bool QualityOperated, Guid? InstructorUserId);
 public sealed record ParticipantRequest(Guid UserId);
-public sealed record NamedRecordRequest(string NameAr, string? NameEn, DateTimeOffset? StartsAtUtc);
+public sealed record NamedRecordRequest(string NameAr, string? NameEn, DateTimeOffset? StartsAtUtc,
+    DeliveryMode Mode = DeliveryMode.InPerson, string? OnlineLink = null);
+public sealed record LectureUpdateRequest(DateTimeOffset? StartsAtUtc, DeliveryMode Mode, string? OnlineLink);
 public sealed record AttendanceCodeRequest(string Code);
 public sealed record ManualAttendanceRequest(bool IsPresent);
 public sealed record ExamResultRequest(ExamOutcome Outcome);

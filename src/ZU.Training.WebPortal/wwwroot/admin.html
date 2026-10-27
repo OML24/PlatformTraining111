@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>لوحة الإدارة | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="admin">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="admin">لوحة الإدارة</h1>
+      <p class="page-subtitle">المستخدمون والصلاحيات، الدورات والمسارات، الإعدادات، التزامن الجامعي، وسجل التدقيق.</p>
+
+      <ul class="nav nav-tabs" id="admin-tabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="users" data-i18n="users">المستخدمون</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="courses" data-i18n="courses">الدورات</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="tracks" data-i18n="tracks">المسارات</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="permissions" data-i18n="permissions">الأدوار والصلاحيات</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="settings" data-i18n="settings">الإعدادات</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="sync" data-i18n="universitySync">التزامن الجامعي</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="audit" data-i18n="auditLog">سجل التدقيق</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="vault" data-i18n="documentVault">مستودع الوثائق</button></li>
+      </ul>
+
+      <section class="panel" id="tab-users">
+        <div class="panel-heading">
+          <div><h2 data-i18n="users">المستخدمون</h2><p>إدارة الحسابات والأدوار والتفويض الفردي.</p></div>
+          <div class="d-flex gap-2">
+            <input id="user-query" class="form-control" data-i18n-placeholder="search" placeholder="بحث">
+            <button class="btn btn-outline-primary" id="user-search" type="button" data-i18n="search">بحث</button>
+            <button class="btn btn-primary" id="new-user-toggle" type="button" data-i18n="newUser">مستخدم جديد</button>
+          </div>
+        </div>
+        <div class="border rounded-3 p-3 mb-3 d-none" id="new-user-box">
+          <div id="new-user-message" class="alert d-none"></div>
+          <form id="new-user-form" class="row g-2">
+            <div class="col-md-3"><input id="nu-login" class="form-control" placeholder="الرقم الوظيفي / رقم الدخول"></div>
+            <div class="col-md-3"><input id="nu-name" class="form-control" placeholder="الاسم بالعربية" required></div>
+            <div class="col-md-3"><input id="nu-name-en" class="form-control" dir="ltr" placeholder="Name (English)"></div>
+            <div class="col-md-3"><input id="nu-email" type="email" class="form-control" dir="ltr" placeholder="name@zu.edu.jo"></div>
+            <div class="col-md-3"><select id="nu-faculty" class="form-select"><option value="">— الكلية —</option></select></div>
+            <div class="col-md-3"><div id="nu-roles" class="d-flex flex-wrap gap-2"></div></div>
+            <div class="col-md-3 form-check ms-2"><input id="nu-external" type="checkbox" class="form-check-input">
+              <label class="form-check-label" for="nu-external">مدرب خارجي</label></div>
+            <div class="col-md-3"><input id="nu-password" class="form-control" dir="ltr" placeholder="كلمة مرور أولية (خارجي)"></div>
+            <div class="col-12"><button class="btn btn-primary" type="submit" data-i18n="save">حفظ</button></div>
+          </form>
+        </div>
+        <div id="users-list"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section class="panel d-none" id="tab-courses">
+        <div class="panel-heading"><div><h2 data-i18n="courses">الدورات</h2>
+          <p>تعطيل منطقي وأرشفة دون حذف السجلات.</p></div>
+          <button class="btn btn-sm btn-outline-primary" id="reload-admin-courses" data-i18n="refresh">تحديث</button></div>
+        <div id="admin-courses"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section class="panel d-none" id="tab-tracks">
+        <div class="panel-heading"><div><h2 data-i18n="tracks">المسارات التدريبية</h2>
+          <p>إضافة وتعديل المسارات وتعطيلها.</p></div></div>
+        <form id="track-form" class="row g-2 mb-4">
+          <input type="hidden" id="track-id">
+          <div class="col-md-3"><input id="track-name-ar" class="form-control" placeholder="اسم المسار" required></div>
+          <div class="col-md-3"><input id="track-name-en" class="form-control" dir="ltr" placeholder="Track name (English)"></div>
+          <div class="col-md-4"><input id="track-obj-ar" class="form-control" placeholder="الأهداف"></div>
+          <div class="col-md-2"><button class="btn btn-primary w-100" type="submit" data-i18n="save">حفظ</button></div>
+        </form>
+        <div id="tracks-list"></div>
+      </section>
+
+      <section class="panel d-none" id="tab-permissions">
+        <div class="panel-heading"><div><h2 data-i18n="permissions">الأدوار والصلاحيات</h2>
+          <p>مصفوفة ثلاثية: موروث / سماح / منع.</p></div></div>
+        <div class="row g-2 mb-3">
+          <div class="col-md-4"><select id="role-select" class="form-select"></select></div>
+          <div class="col-md-8"><div id="shared-password" class="small-muted"></div></div>
+        </div>
+        <div id="role-matrix"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section class="panel d-none" id="tab-settings">
+        <div id="settings-host"><div class="loading">جارٍ التحميل…</div></div>
+      </section>
+
+      <section class="panel d-none" id="tab-sync">
+        <div class="panel-heading"><div><h2 data-i18n="universitySync">التزامن الجامعي</h2>
+          <p>تحديث بيانات الموظفين والكليات من الأنظمة الجامعية.</p></div>
+          <button class="btn btn-primary" id="run-sync" data-i18n="runSync">تشغيل التزامن</button></div>
+        <div id="sync-output"></div>
+      </section>
+
+      <section class="panel d-none" id="tab-audit">
+        <div class="panel-heading"><div><h2 data-i18n="auditLog">سجل التدقيق</h2>
+          <p>كل إجراء إداري مع الفاعل والعنوان والوقت.</p></div>
+          <div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="live-toggle">
+            <label class="form-check-label" for="live-toggle" data-i18n="liveFeed">بث مباشر</label></div></div>
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <input id="audit-action" class="form-control" style="max-width:220px" placeholder="الإجراء (action)">
+          <input id="audit-entity" class="form-control" style="max-width:220px" placeholder="الكيان (entity)">
+          <button class="btn btn-outline-primary" id="audit-search" type="button" data-i18n="search">بحث</button>
+        </div>
+        <div id="audit-list"></div>
+      </section>
+
+      <section class="panel d-none" id="tab-vault"><div id="vault-admin"><div class="loading">جارٍ التحميل…</div></div></section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

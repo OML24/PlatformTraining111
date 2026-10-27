@@ -10,7 +10,8 @@ namespace ZU.Training.WebApi.Controllers;
 [ApiController]
 [Authorize]
 [Route("api/admin")]
-public sealed class AdminUsersController(UserAdminService service) : ControllerBase
+public sealed class AdminUsersController(UserAdminService service, CredentialEmailService emails)
+    : ControllerBase
 {
     [HttpGet("users")]
     [Authorize(Policy = PermissionKeys.ManageUsers)]
@@ -96,9 +97,31 @@ public sealed class AdminUsersController(UserAdminService service) : ControllerB
     public Task<IActionResult> SetSharedInitialPassword([FromBody] PasswordChangeRequest request, CancellationToken ct)
         => Execute(async () => { await service.SetSharedInitialPasswordAsync(ActorId(), request.Password, Ip(), ct); return new { saved = true }; });
 
+    [HttpGet("credentials-email")]
+    [Authorize(Policy = PermissionKeys.SendCredentialEmails)]
+    public Task<IActionResult> CredentialEmailStatus(CancellationToken ct)
+        => Execute(() => emails.StatusAsync(ct));
+
+    [HttpPost("credentials-email/send")]
+    [Authorize(Policy = PermissionKeys.SendCredentialEmails)]
+    [EnableRateLimiting("auth")]
+    public Task<IActionResult> SendCredentialEmails(CancellationToken ct)
+        => Execute(() => emails.SendPendingAsync(ActorId(), Ip(), UserAgent(), ct));
+
+    [HttpPost("users/{id:guid}/send-credentials")]
+    [Authorize(Policy = PermissionKeys.SendCredentialEmails)]
+    [EnableRateLimiting("auth")]
+    public Task<IActionResult> SendUserCredentials(Guid id, CancellationToken ct)
+        => Execute(() => emails.SendToUserAsync(ActorId(), id, Ip(), UserAgent(), ct));
+
     private Guid ActorId() => Guid.TryParse(User.FindFirstValue("sub"), out var id)
         ? id : throw new UnauthorizedAccessException();
     private string? Ip() => HttpContext.Connection.RemoteIpAddress?.ToString();
+    private string? UserAgent()
+    {
+        var value = Request.Headers.UserAgent.ToString();
+        return string.IsNullOrWhiteSpace(value) ? null : (value.Length > 400 ? value[..400] : value);
+    }
 
     private async Task<IActionResult> Execute<T>(Func<Task<T>> action)
     {

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>دائرة الجودة | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="quality">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="quality">دائرة الجودة</h1>
+      <p class="page-subtitle">مراجعة المقترحات، الاحتياجات التدريبية، طلبات الإلغاء، نموذج التقييم، والتوثيق الرسمي.</p>
+
+      <ul class="nav nav-tabs" id="quality-tabs">
+        <li class="nav-item"><button class="nav-link active" data-tab="proposals" data-i18n="courseProposals">مقترحات الدورات</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="needs" data-i18n="trainingNeeds">الاحتياجات التدريبية</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="cancellations" data-i18n="cancellations">طلبات الإلغاء</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="evaluation" data-i18n="evaluation">نموذج التقييم</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="historical" data-i18n="historical">التوثيق التاريخي</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="external" data-i18n="externalTrainers">المدربون الخارجيون</button></li>
+        <li class="nav-item"><button class="nav-link" data-tab="vault" data-i18n="documentVault">مستودع الوثائق</button></li>
+      </ul>
+
+      <section class="panel" id="tab-proposals"><div class="loading">جارٍ التحميل…</div></section>
+
+      <section class="panel d-none" id="tab-needs">
+        <div class="panel-heading"><div><h2 data-i18n="trainingNeeds">الاحتياجات التدريبية</h2><p>يُرفق الكتاب الرسمي مع كل طلب.</p></div></div>
+        <div id="needs-message" class="alert d-none"></div>
+        <form id="need-form" class="row g-2 mb-4">
+          <div class="col-md-4"><input id="n-title" class="form-control" placeholder="عنوان الاحتياج" maxlength="300" required></div>
+          <div class="col-md-4"><input id="n-desc" class="form-control" placeholder="وصف موجز" maxlength="1000" required></div>
+          <div class="col-md-3"><select id="n-faculty" class="form-select"></select></div>
+          <div class="col-md-4"><input id="n-file" type="file" class="form-control" accept=".pdf,.docx" required></div>
+          <div class="col-md-2"><button class="btn btn-primary w-100" type="submit" data-i18n="save">حفظ</button></div>
+        </form>
+        <div id="needs-list"></div>
+      </section>
+
+      <section class="panel d-none" id="tab-cancellations"><div id="cancel-list"><div class="loading">جارٍ التحميل…</div></div></section>
+      <section class="panel d-none" id="tab-evaluation"><div id="evaluation-host"><div class="loading">جارٍ التحميل…</div></div></section>
+      <section class="panel d-none" id="tab-historical"><div id="historical-host"></div></section>
+      <section class="panel d-none" id="tab-external"><div id="external-host"></div></section>
+      <section class="panel d-none" id="tab-vault"><div id="vault-host"></div></section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/quality.js"></script>
+</body>
+</html>

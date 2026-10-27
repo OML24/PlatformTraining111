@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using ZU.Training.Application.Communication;
+using ZU.Training.Application.Members;
+using ZU.Training.Application.Reporting;
 using ZU.Training.Application.Security;
 using ZU.Training.Application.Administration;
 using ZU.Training.Application.Integrations;
@@ -16,6 +19,8 @@ using ZU.Training.Infrastructure.Repositories;
 using ZU.Training.Infrastructure.Security;
 using ZU.Training.Infrastructure.Storage;
 using ZU.Training.Infrastructure.Integrations;
+using ZU.Training.Infrastructure.Communication;
+using ZU.Training.Infrastructure.Documents;
 using ZU.Training.WebApi.Security;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +33,12 @@ var jwtKey = builder.Configuration["Security:JwtSigningKey"]
     ?? throw new InvalidOperationException("Security:JwtSigningKey must be configured outside source control.");
 var portalOrigin = builder.Configuration["WebPortal:Origin"]
     ?? throw new InvalidOperationException("WebPortal:Origin must be configured.");
+
+static string StoragePath(IConfiguration configuration, string key, string fallbackRoot, string folder)
+{
+    var configured = configuration[key];
+    return string.IsNullOrWhiteSpace(configured) ? Path.Combine(fallbackRoot, "storage", folder) : configured;
+}
 
 builder.Services.AddDbContext<TrainingDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IAuthStore, EfAuthStore>();
@@ -46,13 +57,27 @@ builder.Services.AddScoped<IEvaluationStore, EfEvaluationStore>();
 builder.Services.AddScoped<EvaluationService>();
 builder.Services.AddScoped<ICertificateGateStore, EfCertificateGateStore>();
 builder.Services.AddScoped<CertificateGateService>();
+builder.Services.AddScoped<CertificateIssuanceService>();
 builder.Services.AddScoped<ICertificateVerificationStore, EfCertificateVerificationStore>();
 builder.Services.AddScoped<CertificateVerificationService>();
+builder.Services.AddScoped<INotificationStore, EfNotificationStore>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<ICertificateIssuanceStore, EfCertificateIssuanceStore>();
+builder.Services.AddScoped<IAuditStore, EfAuditStore>();
+builder.Services.AddScoped<AuditService>();
+builder.Services.AddScoped<IMemberDirectoryStore, EfMemberDirectoryStore>();
+builder.Services.AddScoped<MemberDirectoryService>();
+builder.Services.AddScoped<IStatisticsStore, EfStatisticsStore>();
+builder.Services.AddScoped<StatisticsService>();
+builder.Services.AddScoped<IExternalTrainerStore, EfExternalTrainerStore>();
+builder.Services.AddScoped<ExternalTrainerService>();
+builder.Services.AddScoped<PasswordRecoveryService>();
+builder.Services.AddScoped<CredentialEmailService>();
 builder.Services.AddScoped<ICourseAdminStore, EfCourseAdminStore>();
 builder.Services.AddScoped<CourseAdminService>();
-builder.Services.AddSingleton<IOfficialDocumentStorage>(new OfficialDocumentStorage(
-    builder.Configuration["Storage:OfficialDocumentsPath"]
-    ?? Path.Combine(builder.Environment.ContentRootPath, "storage", "official-documents")));
+builder.Services.AddSingleton<IOfficialDocumentStorage>(new OfficialDocumentStorage(StoragePath(
+    builder.Configuration, "Storage:OfficialDocumentsPath", builder.Environment.ContentRootPath,
+    "official-documents")));
 builder.Services.AddScoped<IUserAdminStore, EfUserAdminStore>();
 builder.Services.AddScoped<UserAdminService>();
 builder.Services.AddSingleton(new UniversityDirectoryEndpoints(
@@ -61,9 +86,33 @@ builder.Services.AddSingleton(new UniversityDirectoryEndpoints(
     builder.Configuration["University:Faculties"] ?? throw new InvalidOperationException("University faculty URL missing.")));
 builder.Services.AddHttpClient<IUniversitySyncService, UniversitySyncService>(client =>
     client.Timeout = TimeSpan.FromSeconds(30));
-builder.Services.AddSingleton<ICertificateTemplateStorage>(new CertificateTemplateStorage(
-    builder.Configuration["Storage:CertificateTemplatesPath"]
-    ?? Path.Combine(builder.Environment.ContentRootPath, "storage", "certificate-templates")));
+builder.Services.AddSingleton<ICertificateTemplateStorage>(new CertificateTemplateStorage(StoragePath(
+    builder.Configuration, "Storage:CertificateTemplatesPath", builder.Environment.ContentRootPath,
+    "certificate-templates")));
+var portalBaseUrl = builder.Configuration["Portal:BaseUrl"]
+    ?? builder.Configuration["WebPortal:Origin"]
+    ?? "http://localhost:5099";
+var verificationBaseUrl = builder.Configuration["Certificate:VerificationBaseUrl"]
+    ?? portalBaseUrl.TrimEnd('/') + "/verify.html";
+builder.Services.AddSingleton(new CertificateOptions(verificationBaseUrl));
+builder.Services.AddSingleton(new PortalOptions(portalBaseUrl, verificationBaseUrl));
+builder.Services.AddSingleton<ICertificatePdfGenerator>(new CertificatePdfGenerator(new CertificateLayout(
+    builder.Configuration["Certificate:FontFamily"] ?? "Tahoma",
+    builder.Configuration["Certificate:InstitutionArabic"],
+    builder.Configuration["Certificate:InstitutionEnglish"])));
+builder.Services.AddSingleton<ICertificateFileStorage>(new CertificateDocumentStorage(StoragePath(
+    builder.Configuration, "Storage:CertificatesPath", builder.Environment.ContentRootPath, "certificates")));
+builder.Services.AddSingleton<ICourseFileStorage>(new CourseFileStorage(StoragePath(
+    builder.Configuration, "Storage:CourseFilesPath", builder.Environment.ContentRootPath, "course-files")));
+builder.Services.AddSingleton<IQrCodeRenderer, QrCodeRenderer>();
+builder.Services.AddSingleton<IEmailSender>(new SmtpEmailSender(new SmtpOptions(
+    builder.Configuration["Email:Host"] ?? string.Empty,
+    builder.Configuration.GetValue("Email:Port", 587),
+    builder.Configuration.GetValue("Email:EnableSsl", true),
+    builder.Configuration["Email:UserName"],
+    builder.Configuration["Email:Password"],
+    builder.Configuration["Email:FromAddress"] ?? string.Empty,
+    builder.Configuration["Email:FromName"] ?? "Zarqa University Training Platform")));
 builder.Services.AddSingleton<ICredentialCipher>(new AesCredentialCipher(encryptionKey));
 builder.Services.AddSingleton<ITokenIssuer>(new JwtTokenIssuer(
     jwtKey,
@@ -111,15 +160,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization(options =>
 {
-    foreach (var key in new[]
-             {
-                 PermissionKeys.ManageHints,
-                 PermissionKeys.ManagePasswordPolicy,
-                 PermissionKeys.ManageCertificateTemplates,
-                 PermissionKeys.ManageUsers,
-                 PermissionKeys.ManagePermissions,
-                 PermissionKeys.SyncUniversity
-             })
+    foreach (var key in PermissionKeys.All)
         options.AddPolicy(key, policy => policy.RequireAuthenticatedUser()
             .AddRequirements(new PermissionRequirement(key)));
 });
@@ -140,6 +181,18 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+if (args.Contains("--migrate", StringComparer.OrdinalIgnoreCase))
+{
+    // تطبيق ترحيلات قاعدة البيانات ثم الخروج؛ يُستخدم في نشر Docker وسكربتات أوبونتو.
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        var database = scope.ServiceProvider.GetRequiredService<TrainingDbContext>();
+        await database.Database.MigrateAsync();
+    }
+    Console.WriteLine("Database migrations applied.");
+    return;
+}
+
 if (args.Contains("--bootstrap-admin", StringComparer.OrdinalIgnoreCase))
 {
     if (!app.Environment.IsDevelopment())
@@ -151,7 +204,15 @@ if (args.Contains("--bootstrap-admin", StringComparer.OrdinalIgnoreCase))
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+    app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                           Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+        ForwardLimit = null,
+        KnownNetworks = { },
+        KnownProxies = { }
+    });
 app.UseCors("portal");
 app.UseRateLimiter();
 app.UseAuthentication();

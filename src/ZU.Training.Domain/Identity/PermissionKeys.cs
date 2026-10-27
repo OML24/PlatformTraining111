@@ -33,6 +33,23 @@ public static class PermissionKeys
     public const string ViewEvaluationStatistics = "evaluation.statistics.view";
     public const string ChangeExamRequirement = "courses.exam_requirement.change";
     public const string ManageAllCourses = "admin.courses.manage";
+    public const string ViewAdminConsole = "page.admin";
+    public const string ViewQualityConsole = "page.quality";
+    public const string ViewDeanConsole = "page.dean";
+    public const string ViewInstructorConsole = "page.instructor";
+    public const string ViewMemberConsole = "page.member";
+    public const string ViewMemberDirectory = "members.directory.view";
+    public const string ViewAllStatistics = "admin.statistics.view";
+    public const string ViewAuditLog = "admin.audit.view";
+    public const string ManageTracks = "admin.tracks.manage";
+    public const string SendCredentialEmails = "admin.emails.send";
+    public const string ImportHistoricalCourses = "courses.history.import";
+    public const string RequestExternalTrainer = "courses.external_trainer.request";
+    public const string IssueCertificates = "certificates.issue";
+    public const string RevokeCertificates = "certificates.revoke";
+    public const string ManageLectureMaterials = "courses.materials.manage";
+    public const string ViewCourseStatistics = "courses.statistics.view";
+    public const string ViewDocumentVault = "admin.documents.vault";
 
     public static IReadOnlyList<string> All { get; } =
     [
@@ -42,6 +59,10 @@ public static class PermissionKeys
         ViewTrainingNeeds, SubmitTrainingNeeds, ReviewTrainingNeeds, ViewCancellations,
         RequestCancellation, ReviewCancellation, ViewOfficialDocuments, SubmitImpact, ReviewImpact,
         ManageEvaluation, SubmitEvaluation, ViewEvaluationStatistics, ChangeExamRequirement,
-        ManageAllCourses
+        ManageAllCourses,
+        ViewAdminConsole, ViewQualityConsole, ViewDeanConsole, ViewInstructorConsole, ViewMemberConsole,
+        ViewMemberDirectory, ViewAllStatistics, ViewAuditLog, ManageTracks, SendCredentialEmails,
+        ImportHistoricalCourses, RequestExternalTrainer, IssueCertificates, RevokeCertificates,
+        ManageLectureMaterials, ViewCourseStatistics, ViewDocumentVault
     ];
 }

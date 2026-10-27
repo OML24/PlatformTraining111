@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>الإحصاءات | منصة التدريب والتطوير المهني</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link id="bootstrap-style" rel="stylesheet" href="/vendor/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body data-page="statistics">
+  <header id="app-header" class="site-header"></header>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-nav"></aside>
+    <main class="app-main">
+      <h1 class="page-title" data-i18n="statistics">الإحصاءات</h1>
+      <p class="page-subtitle">مؤشرات الدورات والكليات والمسارات والأعضاء واستبيانات الرضا.</p>
+
+      <section class="panel">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4"><label class="form-label" data-i18n="faculty">الكلية</label>
+            <select id="st-faculty" class="form-select"><option value="">كل الكليات</option></select></div>
+          <div class="col-md-3"><button class="btn btn-primary" id="st-refresh" data-i18n="refresh">تحديث</button></div>
+        </div>
+      </section>
+
+      <div class="stat-grid" id="st-overview"></div>
+
+      <section class="panel"><div class="panel-heading"><div><h2 data-i18n="byFaculty">حسب الكلية</h2></div></div>
+        <div id="st-faculties"></div></section>
+      <section class="panel"><div class="panel-heading"><div><h2 data-i18n="byTrack">حسب المسار</h2></div></div>
+        <div id="st-tracks"></div></section>
+      <section class="panel"><div class="panel-heading"><div><h2 data-i18n="byCourse">حسب الدورة</h2></div></div>
+        <div id="st-courses"></div></section>
+      <section class="panel"><div class="panel-heading"><div><h2 data-i18n="evaluation">استبيانات الرضا</h2></div></div>
+        <div id="st-evaluation"></div></section>
+    </main>
+  </div>
+  <script src="/vendor/jquery.min.js"></script>
+  <script src="/vendor/bootstrap.bundle.min.js"></script>
+  <script src="/js/i18n.js"></script>
+  <script src="/js/core.js"></script>
+  <script src="/js/statistics.js"></script>
+</body>
+</html>

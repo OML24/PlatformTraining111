@@ -25,11 +25,21 @@ public interface IQualityRequestStore
     Task<CourseCancellationRequest?> CancellationAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<CourseCancellationRequest>> CancellationsAsync(CancellationToken cancellationToken);
     Task<IReadOnlyList<Certificate>> CertificatesAsync(Guid courseId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<CourseEnrollment>> EnrollmentsAsync(Guid courseId, CancellationToken cancellationToken);
     Task<OfficialDocument?> DocumentAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<OfficialDocument>> DocumentsAsync(string entityType, Guid entityId,
         CancellationToken cancellationToken);
     void AddNeed(TrainingNeed need);
     void AddCancellation(CourseCancellationRequest request);
     void AddDocument(OfficialDocument document);
+    Task<IReadOnlyList<OfficialDocument>> VaultAsync(string? query, string? kind, Guid? entityId,
+        int skip, int take, CancellationToken cancellationToken);
+    Task<int> VaultCountAsync(string? query, string? kind, Guid? entityId, CancellationToken cancellationToken);
+    void AddAudit(ZU.Training.Domain.Settings.AuditEvent audit);
     Task SaveAsync(CancellationToken cancellationToken);
 }
+
+public sealed record OfficialDocumentRow(Guid Id, string EntityType, Guid EntityId, string Kind,
+    string OriginalName, string Sha256, Guid UploadedByUserId, DateTimeOffset UploadedAtUtc);
+
+public sealed record OfficialDocumentVault(IReadOnlyList<OfficialDocumentRow> Items, int Total, int Page);

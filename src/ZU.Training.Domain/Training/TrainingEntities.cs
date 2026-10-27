@@ -52,6 +52,9 @@ public sealed class Course : Entity
     public DateTimeOffset? EndedAtUtc { get; set; }
     public DateTimeOffset? CancelledAtUtc { get; set; }
     public string? ReviewNoteAr { get; set; }
+    public string? ExternalTrainerOrganizationAr { get; set; }
+    public string? ExternalTrainerOrganizationEn { get; set; }
+    public bool IsHistorical { get; set; }
 }
 
 public sealed class CourseReviewDecision : Entity
@@ -69,6 +72,8 @@ public sealed class Lecture : Entity
     public string? TitleEn { get; set; }
     public int SequenceNumber { get; set; }
     public DateTimeOffset? StartsAtUtc { get; set; }
+    public DeliveryMode Mode { get; set; }
+    public string? OnlineLink { get; set; }
     public required string AttendanceCode { get; set; }
     public DateTimeOffset? CodeActivatedAtUtc { get; set; }
 }
@@ -78,6 +83,10 @@ public sealed class CourseEnrollment : Entity
     public Guid CourseId { get; set; }
     public Guid UserId { get; set; }
     public DateTimeOffset EnrolledAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    /// <summary>يُستخدم في إدخال الدورات التاريخية: توثيق الجودة لإتمام الاستبيان.</summary>
+    public bool LegacyEvaluationConfirmed { get; set; }
+    /// <summary>يُستخدم في إدخال الدورات التاريخية: توثيق الجودة لاعتماد الأثر.</summary>
+    public bool LegacyImpactConfirmed { get; set; }
 }
 
 public sealed class AttendanceRecord : Entity
@@ -126,4 +135,5 @@ public sealed class Certificate : Entity
     public CertificateStatus Status { get; set; } = CertificateStatus.Valid;
     public string? StatusReason { get; set; }
     public DateTimeOffset IssuedAtUtc { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset? StatusChangedAtUtc { get; set; }
 }
