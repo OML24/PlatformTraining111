@@ -48,6 +48,12 @@ expect_code "جلسة نشطة" 200 -b "$COOKIES" "$API_URL/api/auth/me"
 ME=$LAST_BODY
 if echo "$ME" | grep -q '"mustChangePassword":true'; then
   pass "إلزام تغيير كلمة المرور مطبّق"
+  NEW_PASSWORD=${NEW_PASSWORD:-"Smoke-Pass-After-Change-2026!"}
+  expect_code "تغيير كلمة المرور" 200 -b "$COOKIES" -c "$COOKIES" -H 'Content-Type: application/json' \
+    -d "{\"oldPassword\":\"$ADMIN_PASSWORD\",\"newPassword\":\"$NEW_PASSWORD\",\"rememberMe\":false}" \
+    "$API_URL/api/auth/change-password"
+  expect_code "دخول بكلمة المرور الجديدة" 200 -c "$COOKIES" -H 'Content-Type: application/json' \
+    -d "{\"loginName\":\"$LOGIN\",\"password\":\"$NEW_PASSWORD\"}" "$API_URL/api/auth/login"
 fi
 
 expect_code "إحصاءات عامة" 200 -b "$COOKIES" "$API_URL/api/statistics/overview"
