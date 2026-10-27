@@ -35,7 +35,7 @@ public sealed class CertificateTemplateStorage(string root) : ICertificateTempla
             }
             await using var saved = File.OpenRead(path);
             var hash = await SHA256.HashDataAsync(saved, cancellationToken);
-            return (key, Convert.ToHexStringLower(hash));
+            return (key, Convert.ToHexString(hash).ToLowerInvariant());
         }
         catch
         {

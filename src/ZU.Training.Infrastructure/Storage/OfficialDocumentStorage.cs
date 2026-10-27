@@ -46,7 +46,7 @@ public sealed class OfficialDocumentStorage(string root) : IOfficialDocumentStor
             }
             saved.Position = 0;
             var hash = await SHA256.HashDataAsync(saved, ct);
-            return new StoredOfficialDocument(key, safeName, Convert.ToHexStringLower(hash));
+            return new StoredOfficialDocument(key, safeName, Convert.ToHexString(hash).ToLowerInvariant());
         }
         catch
         {

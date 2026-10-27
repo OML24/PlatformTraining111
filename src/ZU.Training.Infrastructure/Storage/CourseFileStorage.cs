@@ -60,7 +60,7 @@ public sealed class CourseFileStorage(string root) : ICourseFileStorage
 
             saved.Position = 0;
             var hash = await SHA256.HashDataAsync(saved, ct);
-            return new StoredCourseFile(key, safeName, Convert.ToHexStringLower(hash));
+            return new StoredCourseFile(key, safeName, Convert.ToHexString(hash).ToLowerInvariant());
         }
         catch
         {
