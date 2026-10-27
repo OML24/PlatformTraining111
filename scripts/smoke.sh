@@ -12,8 +12,10 @@ COOKIES="$ARTIFACTS/cookies.txt"
 mkdir -p "$ARTIFACTS"
 
 FAILED=0
-pass() { printf '  ✓ %s\n' "$1"; }
-fail() { printf '  ✗ %s\n' "$1"; FAILED=$((FAILED + 1)); }
+REPORT="$ARTIFACTS/report.txt"
+: > "$REPORT"
+pass() { printf '  ✓ %s\n' "$1" | tee -a "$REPORT"; }
+fail() { printf '  ✗ %s\n' "$1" | tee -a "$REPORT"; FAILED=$((FAILED + 1)); }
 
 expect_code() { # الوصف، الكود المتوقع، args curl...
   local label=$1 expected=$2
