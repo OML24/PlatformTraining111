@@ -3,8 +3,8 @@
 # يُستخدم في CI وللتحقق المحلي:  bash scripts/smoke.sh
 set -uo pipefail
 
-API_URL=${API_URL:-http://127.0.0.1:5098}
-PORTAL_URL=${PORTAL_URL:-http://127.0.0.1:5099}
+API_URL=${API_URL:-http://127.0.0.1:4276}
+PORTAL_URL=${PORTAL_URL:-http://127.0.0.1:4277}
 LOGIN=${ADMIN_LOGIN:-1001}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-Smoke-Test-Pass-2026!}
 ARTIFACTS=${ARTIFACTS:-/tmp/smoke}

@@ -91,7 +91,7 @@ builder.Services.AddSingleton<ICertificateTemplateStorage>(new CertificateTempla
     "certificate-templates")));
 var portalBaseUrl = builder.Configuration["Portal:BaseUrl"]
     ?? builder.Configuration["WebPortal:Origin"]
-    ?? "http://localhost:5099";
+    ?? "http://localhost:4277";
 var verificationBaseUrl = builder.Configuration["Certificate:VerificationBaseUrl"]
     ?? portalBaseUrl.TrimEnd('/') + "/verify.html";
 builder.Services.AddSingleton(new CertificateOptions(verificationBaseUrl));
