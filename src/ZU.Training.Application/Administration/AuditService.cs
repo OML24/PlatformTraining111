@@ -1,3 +1,4 @@
+using ZU.Training.Domain.Identity;
 using ZU.Training.Application.Security;
 
 namespace ZU.Training.Application.Administration;

@@ -95,6 +95,8 @@ public sealed class EfExternalTrainerStore(TrainingDbContext db) : IExternalTrai
                   where role.Key == "ADMIN" && userRole.IsActive && role.IsActive && user.IsActive
                   select user).Distinct().ToListAsync(ct);
 
+    public void AddRequest(ExternalTrainerRequest request) => db.ExternalTrainerRequests.Add(request);
+
     public Task<PasswordPolicy?> PolicyAsync(CancellationToken ct)
         => db.PasswordPolicies.AsNoTracking().Where(x => x.IsActive)
             .OrderByDescending(x => x.EffectiveAtUtc).FirstOrDefaultAsync(ct);

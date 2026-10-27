@@ -68,11 +68,9 @@ public sealed class MemberDirectoryService(IMemberDirectoryStore store,
     {
         var user = await store.UserAsync(actorId, ct) ?? throw new UnauthorizedAccessException();
         var profile = await store.ProfileAsync(actorId, ct);
-        var certificates = await certificates.MineAsync(actorId, ct);
-        var participations = await certificates.ProfileAsync(actorId, actorId, ct);
-        var detail = new MemberDetail(await SummaryAsync(user, ct), profile?.BioAr, profile?.BioEn,
-            profile?.ContactEmail, profile?.Phone, profile?.OfficeAr, certificates);
-        return detail with { Certificates = certificates };
+        var mine = await certificates.MineAsync(actorId, ct);
+        return new MemberDetail(await SummaryAsync(user, ct), profile?.BioAr, profile?.BioEn,
+            profile?.ContactEmail, profile?.Phone, profile?.OfficeAr, mine);
     }
 
     public async Task<MemberCertificateProfile> MyCertificatesAsync(Guid actorId, CancellationToken ct)

@@ -20,7 +20,7 @@ public sealed class CredentialEmailService(IUserAdminStore users, ICredentialCip
 {
     public async Task<IReadOnlyList<CredentialDeliveryRow>> StatusAsync(CancellationToken ct)
     {
-        var rows = await users.SearchUsersAsync(null, 0, 500, ct);
+        var rows = await users.SearchUsersAsync("", 0, 500, ct);
         return rows.OrderBy(x => x.LoginName, StringComparer.Ordinal)
             .Select(x => new CredentialDeliveryRow(x.Id, x.LoginName, x.NameAr, x.Email,
                 x.InitialEmailStatus, x.InitialEmailSentAtUtc, x.InitialEmailLastError))
@@ -30,7 +30,7 @@ public sealed class CredentialEmailService(IUserAdminStore users, ICredentialCip
     public async Task<CredentialDeliveryResult> SendPendingAsync(Guid actorId, string? ip, string? userAgent,
         CancellationToken ct)
     {
-        var candidates = (await users.SearchUsersAsync(null, 0, 500, ct))
+        var candidates = (await users.SearchUsersAsync("", 0, 500, ct))
             .Where(x => !x.IsExternalTrainer &&
                         x.InitialEmailStatus is CredentialEmailStatus.NotSent or CredentialEmailStatus.Failed)
             .OrderBy(x => x.LoginName, StringComparer.Ordinal)

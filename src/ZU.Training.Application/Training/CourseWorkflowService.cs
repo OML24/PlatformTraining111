@@ -1,3 +1,4 @@
+using ZU.Training.Domain.Communication;
 using System.Security.Cryptography;
 using ZU.Training.Application.Communication;
 using ZU.Training.Application.Security;
