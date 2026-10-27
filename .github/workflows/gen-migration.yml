@@ -1,0 +1,48 @@
+name: Generate Migration
+
+# يُستخدم مرة واحدة عند تغيّر النموذج دون جهاز محلي به SDK:
+# يولّد هجرة EF فعلية (مع ModelSnapshot محدَّث) ويرفعها كأثر للتنزيل.
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "اسم الهجرة"
+        required: true
+        default: "PlatformSync"
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ConnectionStrings__TrainingDb: Host=127.0.0.1;Port=5432;Database=design;Username=design;Password=design
+      Security__EncryptionKey: YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      Security__JwtSigningKey: design-time-signing-key-0123456789abcdef0123456789
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: استعادة الأدوات والحزم
+        run: |
+          dotnet tool restore
+          dotnet restore ZU.Training.sln
+
+      - name: توليد الهجرة
+        run: |
+          dotnet ef migrations add "${{ inputs.name }}" \
+            --project src/ZU.Training.Infrastructure \
+            --startup-project src/ZU.Training.WebApi \
+            --context TrainingDbContext
+
+      - name: حذف الهجرات غير المرفوعة سابقاً (تنظيف)
+        run: git status --short src/ZU.Training.Infrastructure/Data/Migrations
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: migrations
+          path: |
+            src/ZU.Training.Infrastructure/Data/Migrations
+          if-no-files-found: error
