@@ -19,7 +19,7 @@ public sealed class ExternalTrainersController(ExternalTrainerService service) :
     public IActionResult SuggestLogin() => Ok(new { login = ExternalTrainerService.SuggestLogin() });
 
     [HttpPost]
-    public Task<IActionResult> Request([FromBody] ExternalTrainerRequestInput input, CancellationToken ct)
+    public Task<IActionResult> Create([FromBody] ExternalTrainerRequestInput input, CancellationToken ct)
         => Execute(async () => await service.RequestAsync(ActorId(), input, Ip(), UserAgent(), ct));
 
     [HttpPost("{id:guid}/account")]
@@ -40,7 +40,7 @@ public sealed class ExternalTrainersController(ExternalTrainerService service) :
 
     private string? UserAgent()
     {
-        var value = Request.Headers.UserAgent.ToString();
+        var value = HttpContext.Request.Headers.UserAgent.ToString();
         return string.IsNullOrWhiteSpace(value) ? null : (value.Length > 400 ? value[..400] : value);
     }
 

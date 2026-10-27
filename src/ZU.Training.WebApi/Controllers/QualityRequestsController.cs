@@ -142,4 +142,13 @@ public sealed class OfficialDocumentsController(QualityRequestService service) :
         catch (UnauthorizedAccessException) { return Forbid(); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+    private async Task<IActionResult> Execute<T>(Func<Task<T>> action)
+    {
+        try { return Ok(await action()); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+    }
 }

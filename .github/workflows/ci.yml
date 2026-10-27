@@ -72,6 +72,92 @@ jobs:
       - name: فحص تماسك الطبقات
         run: python3 scripts/static-audit.py
 
+  smoke:
+    name: تشغيل حقيقي وفحص HTTP
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: zu_training
+          POSTGRES_PASSWORD: smoke-password
+          POSTGRES_DB: zu_smoke
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__TrainingDb: Host=127.0.0.1;Port=5432;Database=zu_smoke;Username=zu_training;Password=smoke-password
+      Security__EncryptionKey: YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+      Security__JwtSigningKey: smoke-test-signing-key-0123456789abcdef0123456789abcdef
+      Api__BaseUrl: http://127.0.0.1:5189
+      Portal__BaseUrl: http://127.0.0.1:5249
+      Certificate__VerificationBaseUrl: http://127.0.0.1:5249/verify.html
+      Storage__OfficialDocumentsPath: /tmp/smoke/storage/official
+      Storage__CertificateTemplatesPath: /tmp/smoke/storage/templates
+      Storage__CertificatesPath: /tmp/smoke/storage/certificates
+      Storage__CourseFilesPath: /tmp/smoke/storage/course-files
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: بناء
+        run: dotnet build ZU.Training.sln -c Release
+
+      - name: تطبيق الترحيلات
+        run: dotnet run --project src/ZU.Training.WebApi -c Release --no-build -- --migrate
+
+      - name: إنشاء حساب الأدمن
+        run: |
+          set -e
+          dotnet run --project src/ZU.Training.WebApi -c Release --no-build -- \
+            --bootstrap-admin --login 1001 --name "مدير الاختبار" --email admin@example.edu \
+            | tee /tmp/bootstrap.txt
+          grep "Initial password" /tmp/bootstrap.txt | sed 's/.*: //' > /tmp/admin-password.txt
+
+      - name: تشغيل الـAPI والبوابة
+        run: |
+          set -e
+          mkdir -p /tmp/smoke/storage
+          nohup dotnet run --project src/ZU.Training.WebApi -c Release --no-build -- \
+            --urls http://127.0.0.1:5189 > /tmp/api.log 2>&1 &
+          nohup dotnet run --project src/ZU.Training.WebPortal -c Release --no-build -- \
+            --urls http://127.0.0.1:5249 > /tmp/portal.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -fsS http://127.0.0.1:5189/api/health >/dev/null 2>&1 && break
+            sleep 2
+          done
+
+      - name: فحص HTTP
+        run: |
+          ADMIN_PASSWORD="$(cat /tmp/admin-password.txt)" bash scripts/smoke.sh
+
+      - name: سجلات الخدمات عند الفشل
+        if: failure()
+        run: |
+          echo "=== API ==="; tail -100 /tmp/api.log || true
+          echo "=== PORTAL ==="; tail -60 /tmp/portal.log || true
+
+      - name: حفظ السجلات
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-logs
+          path: |
+            /tmp/api.log
+            /tmp/portal.log
+            /tmp/smoke/last.json
+          if-no-files-found: ignore
+
   docker:
     name: بناء صورة Docker
     runs-on: ubuntu-latest

@@ -210,7 +210,7 @@ if (!app.Environment.IsDevelopment())
         ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
                            Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
         ForwardLimit = null,
-        KnownNetworks = { },
+        KnownIPNetworks = { },
         KnownProxies = { }
     });
 app.UseCors("portal");
