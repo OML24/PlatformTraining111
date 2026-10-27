@@ -1,6 +1,6 @@
 # منصة التدريب والتطوير المهني — جامعة الزرقاء
 
-مشروع .NET 10 وفق Clean Architecture مع PostgreSQL وEF Core. الواجهة (WebPortal) صفحة ثابتة بـHTML5 وBootstrap 5 وjQuery/AJAX، بلا Razor، وتتحدث بالعربية والإنجليزية. مصدر المتطلبات في [PLATFORM_SPECIFICATION.md](PLATFORM_SPECIFICATION.md)، وحالة التنفيذ التفصيلية في [WORK_PROGRESS.md](WORK_PROGRESS.md)، ومراجعة الجاهزية في [PROJECT_REVIEW.md](PROJECT_REVIEW.md).
+مشروع .NET 8 (LTS) وفق Clean Architecture مع PostgreSQL وEF Core. الواجهة (WebPortal) صفحة ثابتة بـHTML5 وBootstrap 5 وjQuery/AJAX، بلا Razor، وتتحدث بالعربية والإنجليزية. مصدر المتطلبات في [PLATFORM_SPECIFICATION.md](PLATFORM_SPECIFICATION.md)، وحالة التنفيذ التفصيلية في [WORK_PROGRESS.md](WORK_PROGRESS.md)، ومراجعة الجاهزية في [PROJECT_REVIEW.md](PROJECT_REVIEW.md).
 
 ## المشروعات
 
@@ -15,7 +15,7 @@
 
 ## التشغيل المحلي
 
-المتطلبات: .NET 10 SDK، PostgreSQL 16.
+المتطلبات: .NET 8 SDK (أو Visual Studio 2022)، PostgreSQL 16.
 
 1. أنشئ قاعدة البيانات والملف السري للمفاتيح:
 

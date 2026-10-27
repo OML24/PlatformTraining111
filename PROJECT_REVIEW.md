@@ -8,8 +8,8 @@
 
 | العنصر | القيمة |
 | --- | --- |
-| النوع | تطبيق ويب .NET 10 وفق Clean Architecture |
-| قاعدة البيانات | PostgreSQL 16 + EF Core 10 (Npgsql 10) |
+| النوع | تطبيق ويب .NET 8 (LTS) وفق Clean Architecture |
+| قاعدة البيانات | PostgreSQL 16 + EF Core 8 (Npgsql 8) |
 | ملفات C# | 120 ملفاً (30 ملف هجرة/Designer) |
 | الأسطر | ~8.5 ألف سطر كود يدوي + ~39.7 ألف سطر هجرات مولّدة |
 | الواجهة | WebPortal: 12 صفحة HTML ثابتة + CSS + JS وحدات، Bootstrap 5 (RTL/LTR) + jQuery/AJAX، بلا Razor |
@@ -124,7 +124,7 @@ src/
 
 ## 5. خطوات القبول المقترحة
 
-1. على جهاز به .NET 10 وPostgreSQL: `dotnet build ZU.Training.sln -warnaserror` ثم `dotnet test`.
+1. على جهاز به .NET 8 وPostgreSQL: `dotnet build ZU.Training.sln` ثم `dotnet test`.
 2. `docker compose up -d --build` ثم فتح البوابة، الدخول بحساب الأدمن، وتجربة المسار الكامل: إنشاء دورة → اعتماد → ترشيح → تسجيل → محاضرة وحضور → امتحان → تقييم → إصدار شهادة → تحقق عام.
 3. التحقق من PDF العربي (خط `Noto Naskh Arabic` داخل الصورة) وQR على العنوان العام.
 4. مراجعة سجل التدقيق بعد كل خطوة من الخطوات أعلاه.

@@ -9,7 +9,7 @@
 | المعالج/الذاكرة | 2 vCPU / 4 GB | 4 vCPU / 8 GB |
 | القرص | 20 GB | 60 GB (تخزين الشهادات والوثائق) |
 | نظام التشغيل | Ubuntu 22.04 | Ubuntu 24.04 |
-| .NET (للنشر التقليدي) | 10.0 runtime + aspnetcore | 10.0 SDK للبناء على الخادم |
+| .NET (للنشر التقليدي) | 8.0 runtime + aspnetcore | 8.0 SDK للبناء على الخادم |
 | PostgreSQL | 15 | 16 |
 | nginx | 1.18 | 1.24 + شهادة TLS |
 
