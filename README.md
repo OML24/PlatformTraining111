@@ -58,6 +58,23 @@ dotnet run --project src/ZU.Training.WebPortal --urls http://127.0.0.1:5249
 dotnet test ZU.Training.sln
 ```
 
+## التحقق الآلي (CI)
+
+كل فرع يُبنى ويُختبر تلقائياً عبر `.github/workflows/ci.yml`:
+
+| المهمة | ما تتحقق منه |
+| --- | --- |
+| `build` | `dotnet restore` + `dotnet build -c Release` + `dotnet test` |
+| `scripts` | `node --check` لكل ملفات JS، تطابق مفاتيح الترجمة ar/en، مطابقة مسارات الواجهة مع الـAPI، وتماسك الطبقات |
+| `smoke` | **تشغيل حقيقي**: PostgreSQL 16 → `--migrate` → `--bootstrap-admin` → دخول → تغيير كلمة المرور → 16 نداء HTTP على الـAPI والبوابة |
+| `docker` | بناء صورة `Dockerfile` كاملة |
+
+لتشغيل الفحص التشغيلي محلياً بعد تشغيل الخدمتين:
+
+```bash
+ADMIN_PASSWORD='كلمة-المرور-الأولية' bash scripts/smoke.sh
+```
+
 ## الصفحات
 
 | الصفحة | الدور |

@@ -6,9 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   build:
     name: بناء واختبار
@@ -161,17 +158,6 @@ jobs:
             [ -f "$f" ] || continue
             grep -m4 -E 'Unhandled exception|Failed|error' "$f" | sed 's/%/%25/g' | while IFS= read -r line; do echo "::error title=${f##*/}::${line}"; done
           done
-
-      - name: نشر سجل الفشل على الفرع
-        if: failure()
-        run: |
-          mkdir -p .ci
-          { echo '### report'; cat /tmp/smoke/report.txt 2>/dev/null; echo '### api'; tail -40 /tmp/api.log 2>/dev/null; echo '### portal'; tail -20 /tmp/portal.log 2>/dev/null; } > .ci/last-failure.txt
-          git config user.name "ci-diagnostics"
-          git config user.email "ci@users.noreply.github.com"
-          git add -f .ci/last-failure.txt
-          git commit -m "ci: failure log [skip ci]" || true
-          git push origin HEAD:refs/heads/${GITHUB_REF_NAME} || true
 
       - name: حفظ السجلات
         if: always()
