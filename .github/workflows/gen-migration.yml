@@ -1,14 +1,12 @@
 name: Generate Migration
 
-# يُستخدم مرة واحدة عند تغيّر النموذج دون جهاز محلي به SDK:
-# يولّد هجرة EF فعلية (مع ModelSnapshot محدَّث) ويرفعها كأثر للتنزيل.
+# يولّد هجرة EF فعلية (مع تحديث ModelSnapshot) عند الحاجة، دون الحاجة إلى SDK على جهاز المطوّر.
+# التشغيل: عدّل ملف .github/gen-migration ثم ادفعه (أو workflow_dispatch من الفرع الافتراضي).
 on:
+  push:
+    paths:
+      - ".github/gen-migration"
   workflow_dispatch:
-    inputs:
-      name:
-        description: "اسم الهجرة"
-        required: true
-        default: "PlatformSync"
 
 jobs:
   migration:
@@ -32,17 +30,16 @@ jobs:
 
       - name: توليد الهجرة
         run: |
-          dotnet ef migrations add "${{ inputs.name }}" \
+          dotnet ef migrations add PlatformSync \
             --project src/ZU.Training.Infrastructure \
             --startup-project src/ZU.Training.WebApi \
             --context TrainingDbContext
 
-      - name: حذف الهجرات غير المرفوعة سابقاً (تنظيف)
+      - name: عرض الملفات المولدة
         run: git status --short src/ZU.Training.Infrastructure/Data/Migrations
 
       - uses: actions/upload-artifact@v4
         with:
           name: migrations
-          path: |
-            src/ZU.Training.Infrastructure/Data/Migrations
+          path: src/ZU.Training.Infrastructure/Data/Migrations
           if-no-files-found: error
