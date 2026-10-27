@@ -42,7 +42,7 @@ public sealed class EfMemberDirectoryStore(TrainingDbContext db) : IMemberDirect
     public Task<int> ValidCertificateCountAsync(Guid userId, CancellationToken ct)
         => (from certificate in db.Certificates.AsNoTracking()
             join enrollment in db.CourseEnrollments.AsNoTracking() on certificate.EnrollmentId equals enrollment.Id
-            where enrollment.UserId == userId && certificate.Status == CertificateStatus.Issued && certificate.IsActive
+            where enrollment.UserId == userId && certificate.Status == CertificateStatus.Valid && certificate.IsActive
             select certificate.Id).CountAsync(ct);
 
     public void AddProfile(MemberProfile profile) => db.MemberProfiles.Add(profile);

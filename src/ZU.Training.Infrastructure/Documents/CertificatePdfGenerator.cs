@@ -1,5 +1,6 @@
 using System.Globalization;
 using QuestPDF.Fluent;
+using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using ZU.Training.Application.Training;
 
@@ -101,7 +102,7 @@ public sealed class CertificatePdfGenerator(CertificateLayout layout) : ICertifi
                             .FontSize(14).Bold();
 
                         column.Item().PaddingTop(6).AlignCenter()
-                            .Text($"الكلية: {Name(data.FacultyNameAr, data.FacultyNameEn ?? "-")}")
+                            .Text($"الكلية: {Name(data.FacultyNameAr ?? "-", data.FacultyNameEn)}")
                             .FontSize(11).FontColor(Muted);
 
                         column.Item().PaddingTop(20).Row(row =>
