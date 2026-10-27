@@ -12,5 +12,5 @@ public interface ICertificateVerificationStore
     Task<Certificate?> ByReferenceAsync(string reference, CancellationToken ct);
     Task<CourseEnrollment?> EnrollmentAsync(Guid id, CancellationToken ct);
     Task<Course?> CourseAsync(Guid id, CancellationToken ct);
-    Task<ZU.Training.Domain.Identity.UserAccount?> UserAsync(Guid id, CancellationToken ct);
+    Task<global::ZU.Training.Domain.Identity.UserAccount?> UserAsync(Guid id, CancellationToken ct);
 }

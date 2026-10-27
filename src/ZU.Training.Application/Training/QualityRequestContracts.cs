@@ -35,7 +35,7 @@ public interface IQualityRequestStore
     Task<IReadOnlyList<OfficialDocument>> VaultAsync(string? query, string? kind, Guid? entityId,
         int skip, int take, CancellationToken cancellationToken);
     Task<int> VaultCountAsync(string? query, string? kind, Guid? entityId, CancellationToken cancellationToken);
-    void AddAudit(ZU.Training.Domain.Settings.AuditEvent audit);
+    void AddAudit(global::ZU.Training.Domain.Settings.AuditEvent audit);
     Task SaveAsync(CancellationToken cancellationToken);
 }
 

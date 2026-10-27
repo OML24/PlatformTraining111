@@ -15,7 +15,7 @@ public interface ICourseAdminStore
     Task<TrainingTrack?> TrackAsync(Guid id, CancellationToken ct);
     Task<bool> TrackNameExistsAsync(Guid? id, string nameAr, CancellationToken ct);
     void AddTrack(TrainingTrack track);
-    void AddAudit(ZU.Training.Domain.Settings.AuditEvent audit);
+    void AddAudit(global::ZU.Training.Domain.Settings.AuditEvent audit);
     Task SaveAsync(CancellationToken ct);
 }
 

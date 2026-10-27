@@ -102,7 +102,7 @@ public sealed class CourseAdminService(ICourseAdminStore store, CertificateGateS
         track.ObjectivesAr = Clean(input.ObjectivesAr) ?? track.ObjectivesAr;
         track.ObjectivesEn = Clean(input.ObjectivesEn);
         track.IsActive = true;
-        store.AddAudit(new ZU.Training.Domain.Settings.AuditEvent
+        store.AddAudit(new global::ZU.Training.Domain.Settings.AuditEvent
         {
             ActorUserId = actorId, ActionKey = id.HasValue ? "track.updated" : "track.created",
             EntityType = "TrainingTrack", EntityId = track.Id, IpAddress = ip, Reason = track.NameAr
@@ -117,7 +117,7 @@ public sealed class CourseAdminService(ICourseAdminStore store, CertificateGateS
         await RequireTrackManagerAsync(actorId, ct);
         var track = await store.TrackAsync(id, ct) ?? throw new KeyNotFoundException("Track not found.");
         track.IsActive = active;
-        store.AddAudit(new ZU.Training.Domain.Settings.AuditEvent
+        store.AddAudit(new global::ZU.Training.Domain.Settings.AuditEvent
         {
             ActorUserId = actorId, ActionKey = active ? "track.restored" : "track.disabled",
             EntityType = "TrainingTrack", EntityId = track.Id, IpAddress = ip, Reason = track.NameAr

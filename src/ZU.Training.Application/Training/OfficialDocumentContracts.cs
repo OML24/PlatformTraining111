@@ -10,8 +10,6 @@ public interface IOfficialDocumentStorage
     Task DeleteAsync(string storageKey, CancellationToken cancellationToken);
 }
 
-namespace ZU.Training.Application.Training;
-
 public sealed record StoredCourseFile(string StorageKey, string OriginalName, string Sha256);
 
 /// <summary>تخزين ملفات الدورات (حقائب تدريبية، عروض، مرفقات محاضرات).</summary>
