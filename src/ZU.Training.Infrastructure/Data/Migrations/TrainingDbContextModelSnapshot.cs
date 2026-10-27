@@ -22,67 +22,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ZU.Training.Domain.Communication.Notification", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BodyAr")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("BodyEn")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Kind")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)");
-
-                    b.Property<string>("LinkUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<DateTimeOffset?>("ReadAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TitleAr")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("TitleEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "CreatedAtUtc");
-
-                    b.ToTable("notifications", (string)null);
-                });
-
             modelBuilder.Entity("ZU.Training.Domain.Identity.Department", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1231,15 +1170,8 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.Property<bool>("FirstLoginCompleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("InitialEmailLastError")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
                     b.Property<DateTimeOffset?>("InitialEmailSentAtUtc")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("InitialEmailStatus")
-                        .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -1394,71 +1326,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.ToTable("user_roles", (string)null);
                 });
 
-            modelBuilder.Entity("ZU.Training.Domain.Members.MemberProfile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("BioAr")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<string>("BioEn")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<string>("ContactEmail")
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ExpertiseAr")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<string>("ExpertiseEn")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("OfficeAr")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(40)
-                        .HasColumnType("character varying(40)");
-
-                    b.Property<string>("PhotoStorageKey")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("member_profiles", (string)null);
-                });
-
             modelBuilder.Entity("ZU.Training.Domain.Settings.AuditEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1475,10 +1342,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Details")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
                     b.Property<Guid?>("EntityId")
                         .HasColumnType("uuid");
 
@@ -1487,8 +1350,7 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("IpAddress")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -1506,13 +1368,7 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserAgent")
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedAtUtc");
 
                     b.ToTable("audit_events", (string)null);
                 });
@@ -2273,9 +2129,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTimeOffset?>("StatusChangedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("StatusReason")
                         .HasColumnType("text");
 
@@ -2394,14 +2247,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.Property<Guid?>("EvaluationFormVersionId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ExternalTrainerOrganizationAr")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("ExternalTrainerOrganizationEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
                     b.Property<Guid?>("FacultyId")
                         .HasColumnType("uuid");
 
@@ -2420,9 +2265,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
-
-                    b.Property<bool>("IsHistorical")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("ObjectivesAr")
                         .IsRequired()
@@ -2587,12 +2429,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
-
-                    b.Property<bool>("LegacyEvaluationConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("LegacyImpactConfirmed")
-                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -2957,80 +2793,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.ToTable("exam_results", (string)null);
                 });
 
-            modelBuilder.Entity("ZU.Training.Domain.Training.ExternalTrainerRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("CourseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedLoginName")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(320)
-                        .HasColumnType("character varying(320)");
-
-                    b.Property<DateTimeOffset?>("HandledAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("HandledByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("NoteAr")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("OrganizationAr")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid>("RequestedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TrainerNameAr")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("TrainerNameEn")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HandledByUserId");
-
-                    b.HasIndex("RequestedByUserId");
-
-                    b.HasIndex("Status");
-
-                    b.ToTable("external_trainer_requests", (string)null);
-                });
-
             modelBuilder.Entity("ZU.Training.Domain.Training.ImpactSubmission", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3127,13 +2889,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("Mode")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("OnlineLink")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
                     b.Property<int>("SequenceNumber")
                         .HasColumnType("integer");
 
@@ -3156,58 +2911,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("lectures", (string)null);
-                });
-
-            modelBuilder.Entity("ZU.Training.Domain.Training.LectureMaterial", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsArchived")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("LectureId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("OriginalName")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("Sha256")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("StorageKey")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTimeOffset>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UploadedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LectureId");
-
-                    b.HasIndex("UploadedByUserId");
-
-                    b.ToTable("lecture_materials", (string)null);
                 });
 
             modelBuilder.Entity("ZU.Training.Domain.Training.OfficialDocument", b =>
@@ -3439,15 +3142,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ZU.Training.Domain.Communication.Notification", b =>
-                {
-                    b.HasOne("ZU.Training.Domain.Identity.UserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ZU.Training.Domain.Identity.Department", b =>
                 {
                     b.HasOne("ZU.Training.Domain.Identity.Faculty", null)
@@ -3507,15 +3201,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ZU.Training.Domain.Identity.UserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ZU.Training.Domain.Members.MemberProfile", b =>
-                {
                     b.HasOne("ZU.Training.Domain.Identity.UserAccount", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -3732,20 +3417,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ZU.Training.Domain.Training.ExternalTrainerRequest", b =>
-                {
-                    b.HasOne("ZU.Training.Domain.Identity.UserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("HandledByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ZU.Training.Domain.Identity.UserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("RequestedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ZU.Training.Domain.Training.ImpactSubmission", b =>
                 {
                     b.HasOne("ZU.Training.Domain.Training.CourseEnrollment", null)
@@ -3765,21 +3436,6 @@ namespace ZU.Training.Infrastructure.Data.Migrations
                     b.HasOne("ZU.Training.Domain.Training.Course", null)
                         .WithMany()
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ZU.Training.Domain.Training.LectureMaterial", b =>
-                {
-                    b.HasOne("ZU.Training.Domain.Training.Lecture", null)
-                        .WithMany()
-                        .HasForeignKey("LectureId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ZU.Training.Domain.Identity.UserAccount", null)
-                        .WithMany()
-                        .HasForeignKey("UploadedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            10.0.x
+            8.0.x
 
       - name: استعادة الحزم
         run: dotnet restore ZU.Training.sln
@@ -110,7 +110,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 8.0.x
 
       - name: بناء
         run: dotnet build ZU.Training.sln -c Release

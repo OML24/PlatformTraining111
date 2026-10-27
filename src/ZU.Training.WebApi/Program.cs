@@ -177,7 +177,6 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -202,15 +201,14 @@ if (args.Contains("--bootstrap-admin", StringComparer.OrdinalIgnoreCase))
 }
 
 if (app.Environment.IsDevelopment())
-    app.MapOpenApi();
-
+    
 if (!app.Environment.IsDevelopment())
     app.UseForwardedHeaders(new ForwardedHeadersOptions
     {
         ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
                            Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
         ForwardLimit = null,
-        KnownIPNetworks = { },
+        KnownNetworks = { },
         KnownProxies = { }
     });
 app.UseCors("portal");

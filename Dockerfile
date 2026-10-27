@@ -2,7 +2,7 @@
 # منصة التدريب والتطوير المهني — جامعة الزرقاء
 # صورة واحدة تبني خدمة الـAPI وبوابة الويب، ويُشغّل كل منهما بأمر مستقل.
 # ---------------------------------------------------------------------------
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY ZU.Training.sln ./
@@ -19,7 +19,7 @@ COPY src/ src/
 RUN dotnet publish src/ZU.Training.WebApi/ZU.Training.WebApi.csproj -c Release -o /app/api --no-restore \
  && dotnet publish src/ZU.Training.WebPortal/ZU.Training.WebPortal.csproj -c Release -o /app/portal --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
 # خطوط عربية لمولّد الشهادات (QuestPDF) وأدوات فحص الصحة
