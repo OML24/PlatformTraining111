@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // البوابة تخدم الصفحات الثابتة وتُمرّر مسارات /api إلى خدمة الـAPI على نفس الأصل،
 // فيبقى ملف تعريف الجلسة (Cookie) صالحاً دون الحاجة إلى CORS.
-var apiBaseUrl = (builder.Configuration["Api:BaseUrl"] ?? "http://127.0.0.1:5189").TrimEnd('/');
+var apiBaseUrl = (builder.Configuration["Api:BaseUrl"] ?? "http://127.0.0.1:5098").TrimEnd('/');
 builder.Services.AddHttpClient("api", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);

@@ -46,11 +46,11 @@ dotnet run --project src/ZU.Training.WebApi -- \
   --bootstrap-admin --login 1001 --name "مدير المنصة" --email admin@zu.edu.jo
 
 # الخدمتان في نافذتين
-dotnet run --project src/ZU.Training.WebApi --urls http://127.0.0.1:5189
-dotnet run --project src/ZU.Training.WebPortal --urls http://127.0.0.1:5249
+dotnet run --project src/ZU.Training.WebApi --urls http://127.0.0.1:5098
+dotnet run --project src/ZU.Training.WebPortal --urls http://127.0.0.1:5099
 ```
 
-افتح `http://127.0.0.1:5249/`. البوابة تُمرّر كل مسارات `/api` إلى `Api:BaseUrl` (الافتراضي `http://127.0.0.1:5189`)، لذا يبقى ملف تعريف الجلسة `zu_access` صالحاً على نفس الأصل ولا حاجة إلى CORS.
+افتح `http://127.0.0.1:5099/`. البوابة تُمرّر كل مسارات `/api` إلى `Api:BaseUrl` (الافتراضي `http://127.0.0.1:5098`)، لذا يبقى ملف تعريف الجلسة `zu_access` صالحاً على نفس الأصل ولا حاجة إلى CORS.
 
 3. الاختبارات:
 

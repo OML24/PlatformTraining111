@@ -96,9 +96,9 @@ jobs:
       ConnectionStrings__TrainingDb: Host=127.0.0.1;Port=5432;Database=zu_smoke;Username=zu_training;Password=smoke-password
       Security__EncryptionKey: YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
       Security__JwtSigningKey: smoke-test-signing-key-0123456789abcdef0123456789abcdef
-      Api__BaseUrl: http://127.0.0.1:5189
-      Portal__BaseUrl: http://127.0.0.1:5249
-      Certificate__VerificationBaseUrl: http://127.0.0.1:5249/verify.html
+      Api__BaseUrl: http://127.0.0.1:5098
+      Portal__BaseUrl: http://127.0.0.1:5099
+      Certificate__VerificationBaseUrl: http://127.0.0.1:5099/verify.html
       Storage__OfficialDocumentsPath: /tmp/smoke/storage/official
       Storage__CertificateTemplatesPath: /tmp/smoke/storage/templates
       Storage__CertificatesPath: /tmp/smoke/storage/certificates
@@ -133,11 +133,11 @@ jobs:
           set -e
           mkdir -p /tmp/smoke/storage
           nohup dotnet run --project src/ZU.Training.WebApi -c Release --no-build -- \
-            --urls http://127.0.0.1:5189 > /tmp/api.log 2>&1 &
+            --urls http://127.0.0.1:5098 > /tmp/api.log 2>&1 &
           nohup dotnet run --project src/ZU.Training.WebPortal -c Release --no-build -- \
-            --urls http://127.0.0.1:5249 > /tmp/portal.log 2>&1 &
+            --urls http://127.0.0.1:5099 > /tmp/portal.log 2>&1 &
           for i in $(seq 1 60); do
-            curl -fsS http://127.0.0.1:5189/api/health >/dev/null 2>&1 && break
+            curl -fsS http://127.0.0.1:5098/api/health >/dev/null 2>&1 && break
             sleep 2
           done
 
