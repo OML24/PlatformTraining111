@@ -112,3 +112,4 @@ sudo systemctl enable --now zu-training-api zu-training-portal
 - رقم الشهادة (`Certificate:VerificationBaseUrl`) يُطبع في رمز QR داخل PDF؛ اضبطه على العنوان العام قبل إصدار أي شهادة.
 - البريد اختياري: بدون `Email:Host` تُسجَّل محاولات الإرسال كـ`Failed` وتظهر في سجل التدقيق، وتُرسَل كلمات المرور الأولية يدوياً من شاشة الإدارة.
 - لا تُفعّل `UseHttpsRedirection`؛ التطبيق يعمل خلف nginx/وكيل يعالج TLS ويقرأ `X-Forwarded-*`.
+
